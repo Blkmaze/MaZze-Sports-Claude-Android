@@ -383,7 +383,7 @@ function playGame(g){
   var ci=matchChannel(g);
   if(ci<0){toast(CH.length?'No channel matched this game - pick one in Channels':'Add a playlist in Settings first');show(CH.length?'ch':'st');return}
   playChannelIdx(ci)}
-function pri(g){if(g.col)return g.rk<=20?100-g.rk:0;if(g.lg==='NFL')return 60+g.wp*30;return 50+g.wp*10}
+function pri(g){var d=new Date().getDay();if(g.col){var b=(d===6&&g.lg==='NCAAF')?100:0;return g.rk<=20?b+100-g.rk:0}if(g.lg==='NFL'){var nb=(d===0||d===1||d===4)?120:0;return nb+60+g.wp*30}return 50+g.wp*10}
 function homeList(G){var L=G.filter(function(g){return g.st==='in'});if(L.length)return L;var S=G.filter(function(g){return g.st==='pre'&&g.dt&&(new Date(g.dt).getTime()-Date.now())<10800000});return S.length?S:G.slice(0,1)}
 function render(){var G=GAMES,live=G.filter(function(g){return g.st==='in'}).length,HG=homeList(G),h=HG[0];
   document.getElementById('hdr').textContent=live+' live now · '+G.length+' games shown'+(okNet?'':' · offline, showing last data');

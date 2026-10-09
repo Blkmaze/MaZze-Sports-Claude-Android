@@ -156,7 +156,7 @@
           <div class="cab f" data-act="sqgame" data-g="0" style="z-index:6">&#127922; Play Squares</div><div class="pinfo" id="hinfo"></div>
         </div>
         <div class="side">
-          <h4>UP NEXT</h4>
+          <h4>COMING DAYS</h4>
           <div class="tm f" id="t0" data-act="watch" data-g="0"><span class="dot"></span><b>-</b><em>-</em></div>
           <div class="tm f" id="t1" data-act="watch" data-g="0"><span class="dot"></span><b>-</b><em>-</em></div>
           <div class="tm f" id="t2" data-act="watch" data-g="0"><span class="dot"></span><b>-</b><em>-</em></div>
@@ -549,7 +549,8 @@ function render(){extGames();var G=GAMES,live=G.filter(function(g){return g.st==
   document.getElementById('hsb').innerHTML=bar(h);document.querySelector('#home .prev').dataset.g=G.indexOf(h);document.querySelector('#home .cab').dataset.g=G.indexOf(h);
   document.getElementById('hinfo').innerHTML='<h3>'+(h.st==='in'?'<span class="tag">LIVE</span>':'')+h.t+'</h3><p>'+h.m+' · '+lab(h)+' · press OK to watch on your playlist</p>';
   var k,g,e;
-  document.getElementById('t3').style.display='none';for(k=0;k<3;k++){g=HG[11+k];e=document.getElementById('t'+k);e.style.display=g?'':'none';if(!g)continue;e.dataset.g=G.indexOf(g);e.innerHTML='<span class="dot'+(g.st==='in'?' l':'')+'"></span><b>'+g.a+' @ '+g.b+'</b><em>'+(g.st==='pre'?lab(g):(g.st==='in'?'LIVE · ':'FINAL · ')+sc(g,'a')+'-'+sc(g,'h'))+'</em>'}
+  var used={},TL;HG.slice(0,11).forEach(function(x){used[x.id]=1});TL=G.filter(function(x){return x.st==='pre'&&!used[x.id]&&dayDiff(x)>=1&&x.lg!=='NCAAH'}).sort(function(x,y){return pri(y)-pri(x)});
+  document.getElementById('t3').style.display='none';for(k=0;k<3;k++){g=TL[k];e=document.getElementById('t'+k);e.style.display=g?'':'none';if(!g)continue;e.dataset.g=G.indexOf(g);e.innerHTML='<span class="dot'+(g.st==='in'?' l':'')+'"></span><b>'+g.a+' @ '+g.b+'</b><em>'+(g.st==='pre'?lab(g):(g.st==='in'?'LIVE · ':'FINAL · ')+sc(g,'a')+'-'+sc(g,'h'))+'</em>'}
   for(k=0;k<10;k++){g=HG[1+k];e=document.getElementById('c'+k);e.style.display=g?'':'none';if(!g)continue;e.dataset.g=G.indexOf(g);e.innerHTML='<span class="lg">'+(isMy(g)?'\u2605 ':'')+g.m.split(' - ').pop().toUpperCase()+'</span>'+(g.st==='in'?'<span class="lv">LIVE</span>':'')+'<div class="ln w"><span>'+g.a+'</span><span>'+sc(g,'a')+'</span></div><div class="ln l"><span>'+g.b+'</span><span>'+sc(g,'h')+'</span></div><div class="ft">'+lab(g)+'</div>'}
   for(k=0;k<4;k++){g=HG[k]||HG[0];document.getElementById('ms'+k).innerHTML=bar(g);document.getElementById('mn'+k).textContent=g.m+' · '+g.t;document.getElementById('ms'+k).parentNode.dataset.g=G.indexOf(g)}}
 

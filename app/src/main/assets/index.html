@@ -9,7 +9,7 @@
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;background:#000;overflow:hidden;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;color:var(--text)}
   #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
-  #stage{width:1920px;height:1080px;transform-origin:center;position:relative;overflow:hidden;background:radial-gradient(900px 500px at 100% 0%,#3a1e0a 0%,transparent 60%),var(--bg)}
+  #stage{width:1920px;height:1080px;transform-origin:center;flex:none;position:relative;overflow:hidden;background:radial-gradient(900px 500px at 100% 0%,#3a1e0a 0%,transparent 60%),var(--bg)}
   .f{outline:none;transition:transform .12s,box-shadow .12s,border-color .12s}
   .f.focus{border-color:var(--hot)!important;box-shadow:0 0 0 4px rgba(255,122,26,.35),0 14px 36px rgba(0,0,0,.55);transform:scale(1.04);z-index:5}
   #rail{position:absolute;left:54px;top:54px;bottom:54px;width:230px;background:var(--panel);border:2px solid var(--line);border-radius:28px;padding:22px 14px;display:flex;flex-direction:column;gap:8px}
@@ -211,8 +211,8 @@
 (function(){
 var A=window.Android||null;
 var stage=document.getElementById('stage');
-function fit(){stage.style.transform='scale('+Math.min(innerWidth/1920,innerHeight/1080)+')'}
-addEventListener('resize',fit);fit();
+function fit(){var w=window.innerWidth||document.documentElement.clientWidth||screen.width||1920,h=window.innerHeight||document.documentElement.clientHeight||screen.height||1080;var k=Math.min(w/1920,h/1080);if(!(k>0))k=1;stage.style.transform='scale('+k+')'}
+addEventListener('resize',fit);fit();setTimeout(fit,300);setTimeout(fit,1500);setInterval(fit,3000);
 var cur=null;
 function vis(e){return e.offsetParent!==null}
 function list(){var s=document.querySelector('.screen.on');return [].slice.call(document.querySelectorAll('#rail .f')).concat([].slice.call(s.querySelectorAll('.f'))).filter(vis)}
@@ -238,7 +238,7 @@ function http(url,cb){
   if(A&&A.httpGet){var id=++cid;cbs[id]=cb;A.httpGet(id,url)}
   else fetch(url).then(function(r){return r.text()}).then(function(t){cb(null,t)}).catch(function(e){cb(String(e),'')})}
 
-var CH=[],VIEW=[],SPORTS=null,chPos=0,showAll=false,grp='',groups=[],plMode=sget('plmode','m3u');
+var CH=[],VIEW=[],SPORTS=null,chPos=0,showAll=sget('showall','1')==='1',grp='',groups=[],plMode=sget('plmode','m3u');
 var SP_RE=/sport|espn|fox sports|\bfs1\b|\bfs2\b|nfl|nba|nhl|mlb|mls|nbc sports|cbs sports|bein|sky sports|tnt|dazn|fight|ufc|boxing|wwe|golf|tennis|racing|f1|nascar|soccer|football|basketball|hockey|baseball|premier|laliga|bundesliga|big ten|btn|sec network|acc network|bally|msg|nesn|yes network/i;
 function parseM3U(t){var L=t.split(/\r?\n/),out=[],i;
   for(i=0;i<L.length;i++){var l=L[i];
@@ -404,7 +404,7 @@ function sel(){if(!cur)return;
     else{toast('Opening '+cur.dataset.p+' checkout for $'+(n*price)+' on parlaypro-squares.netlify.app');if(A&&A.openUrl)A.openUrl('https://parlaypro-squares.netlify.app/')}}
   else if(a==='toggle'){spoil=!spoil;sset('spoil',spoil?'1':'0');render();toast('Spoiler-free '+(spoil?'ON':'OFF'))}
   else if(a==='chplay'){var gi2=VIEW[winStart()+(+cur.dataset.r)];if(gi2!==undefined)playChannelIdx(gi2)}
-  else if(a==='chmode'){showAll=!showAll;buildView();renderCh()}
+  else if(a==='chmode'){showAll=!showAll;sset('showall',showAll?'1':'0');buildView();renderCh()}
   else if(a==='chgroup'){var gl=[''].concat(groups),ix=gl.indexOf(grp);grp=gl[(ix+1)%gl.length];buildView();renderCh()}
   else if(a==='az'){azJump();chFocusRow()}
   else if(a==='pm'){plMode=cur.dataset.m;sset('plmode',plMode);applyMode()}

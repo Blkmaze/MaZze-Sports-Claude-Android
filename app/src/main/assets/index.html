@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MaZze Sports</title>
+<style>
+  :root{--bg:#0d0d10;--panel:#17171c;--panel2:#202027;--line:#2d2d36;--text:#f5f5f7;--mute:#9a9aa8;--hot:#ff7a1a;--lime:#a3e635;--live:#ff3b3b}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#000;overflow:hidden;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;color:var(--text)}
+  #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  #stage{width:1920px;height:1080px;transform-origin:center;position:relative;overflow:hidden;background:radial-gradient(900px 500px at 100% 0%,#3a1e0a 0%,transparent 60%),var(--bg)}
+  .f{outline:none;transition:transform .12s,box-shadow .12s,border-color .12s}
+  .f.focus{border-color:var(--hot)!important;box-shadow:0 0 0 4px rgba(255,122,26,.35),0 14px 36px rgba(0,0,0,.55);transform:scale(1.04);z-index:5}
+  #rail{position:absolute;left:54px;top:54px;bottom:54px;width:230px;background:var(--panel);border:2px solid var(--line);border-radius:28px;padding:22px 14px;display:flex;flex-direction:column;gap:8px}
+  .brand{font-size:30px;font-weight:900;letter-spacing:.5px;padding:6px 12px 18px}
+  .brand b{color:var(--hot)}
+  .ri{display:flex;align-items:center;gap:16px;padding:15px 16px;border-radius:16px;font-size:24px;color:var(--mute);border:2px solid transparent}
+  .ri i{font-style:normal;font-size:28px;width:34px;text-align:center}
+  .ri.on{background:var(--panel2);color:var(--text)}
+  .sep{font-size:16px;letter-spacing:2px;color:var(--mute);padding:16px 16px 4px}
+  .me{margin-top:auto;font-size:18px;color:var(--mute);padding:10px 14px}
+  #main{position:absolute;left:316px;right:54px;top:54px;bottom:54px}
+  .screen{position:absolute;inset:0;display:none}.screen.on{display:block}
+  .top{display:flex;justify-content:space-between;align-items:center;height:56px}
+  .top h2{font-size:36px;font-weight:800}
+  .top span{font-size:22px;color:var(--mute)}
+  .hrow{display:flex;gap:26px;margin-top:14px}
+  .prev{width:1010px;height:568px;border-radius:26px;border:2px solid var(--line);position:relative;overflow:hidden;background:radial-gradient(700px 380px at 50% 40%,#17402a,#08130d 75%)}
+  .prev .pitch{position:absolute;left:8%;right:8%;top:14%;bottom:24%;border:3px solid rgba(255,255,255,.16);border-radius:12px}
+  .prev .pitch:before{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:3px solid rgba(255,255,255,.16)}
+  .sb{position:absolute;left:26px;top:24px;display:flex;border-radius:12px;overflow:hidden;font-weight:800;font-size:28px;border:2px solid #3a3a46}
+  .sb div{padding:10px 18px;background:rgba(10,10,14,.9)}
+  .sb .h{background:var(--hot);color:#1b0b00}
+  .pinfo{position:absolute;left:0;right:0;bottom:0;padding:70px 30px 24px;background:linear-gradient(transparent,rgba(0,0,0,.9))}
+  .pinfo h3{font-size:36px}.pinfo p{font-size:21px;color:var(--mute);margin-top:4px}
+  .tag{display:inline-block;background:var(--live);font-weight:800;font-size:17px;padding:3px 10px;border-radius:6px;letter-spacing:1px;margin-right:10px;vertical-align:middle}
+  .side{flex:1;display:flex;flex-direction:column;gap:12px}
+  .side h4{font-size:22px;color:var(--mute);letter-spacing:2px;font-weight:700;margin:4px 6px 2px}
+  .tm{height:90px;border-radius:18px;background:var(--panel);border:2px solid var(--line);display:flex;align-items:center;padding:0 20px;gap:16px;font-size:23px}
+  .tm .dot{width:14px;height:14px;border-radius:50%;background:var(--lime)}
+  .tm .dot.l{background:var(--live)}
+  .tm b{font-weight:700}.tm em{margin-left:auto;font-style:normal;color:var(--mute);font-size:19px}
+  .strip{display:flex;gap:20px;margin-top:20px}
+  .gc{width:276px;height:180px;border-radius:20px;background:var(--panel);border:2px solid var(--line);padding:16px 18px;position:relative}
+  .gc .lg{font-size:16px;color:var(--hot);font-weight:800;letter-spacing:1px}
+  .gc .ln{display:flex;justify-content:space-between;font-size:26px;font-weight:700;margin-top:10px}
+  .gc .ln.w{color:var(--text)}.gc .ln.l{color:var(--mute);font-weight:600}
+  .gc .ft{position:absolute;left:18px;bottom:12px;font-size:17px;color:var(--mute)}
+  .gc .lv{position:absolute;right:14px;top:12px;font-size:15px;font-weight:800;background:var(--live);padding:2px 8px;border-radius:5px}
+  .mv{display:grid;grid-template-columns:1fr 1fr;gap:20px;height:760px;margin-top:14px}
+  .mvc{border-radius:22px;border:2px solid var(--line);position:relative;overflow:hidden;background:radial-gradient(500px 260px at 50% 40%,#17402a,#08130d 75%)}
+  .mvc:nth-child(2){background:radial-gradient(500px 260px at 50% 40%,#3a2a12,#120d06 75%)}
+  .mvc:nth-child(3){background:radial-gradient(500px 260px at 50% 40%,#122a3f,#060d13 75%)}
+  .mvc:nth-child(4){background:radial-gradient(500px 260px at 50% 40%,#2e1240,#0d0613 75%)}
+  .mvc .sb{left:18px;top:16px;font-size:22px}
+  .mvc .snd{position:absolute;right:18px;top:18px;font-size:20px;background:rgba(0,0,0,.6);padding:6px 14px;border-radius:999px;color:var(--lime)}
+  .mvc .nm{position:absolute;left:20px;bottom:16px;font-size:24px;font-weight:700}
+  .pill{padding:14px 28px;border-radius:999px;background:var(--panel2);border:2px solid var(--line);font-size:22px}
+  .cw{display:flex;gap:26px;margin-top:14px}
+  .cl{width:760px;height:760px;background:var(--panel);border:2px solid var(--line);border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:8px}
+  .cr{height:76px;flex:none;border-radius:16px;border:2px solid transparent;display:flex;align-items:center;padding:0 20px;gap:20px;font-size:25px}
+  .cr i{font-style:normal;color:var(--mute);width:50px;font-size:21px}
+  .cr b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:470px}
+  .cr em{margin-left:auto;font-style:normal;color:var(--mute);font-size:19px}
+  .cr.on{background:var(--panel2)}
+  .cp{flex:1;background:var(--panel);border:2px solid var(--line);border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:16px}
+  .cp h3{font-size:34px}.cp p{font-size:22px;color:var(--mute)}
+  .sqw{display:flex;gap:26px;margin-top:10px}
+  .sqb{background:var(--panel);border:2px solid var(--line);border-radius:24px;padding:14px 18px}
+  .gp{display:flex;gap:12px;margin:6px 0 12px}
+  .gp .pill{font-size:20px;padding:10px 22px}.gp .pill.on{background:var(--hot);color:#1b0b00;font-weight:800}
+  .grid{display:grid;grid-template-columns:repeat(11,64px);gap:5px}
+  .ax{display:grid;place-items:center;font-size:22px;font-weight:800;color:var(--lime);height:64px}
+  .ax.t{height:36px;font-size:18px;color:var(--mute)}
+  .sq{height:64px;border-radius:10px;background:var(--panel2);border:2px solid var(--line);display:grid;place-items:center;font-size:17px;color:var(--mute)}
+  .sq.tk{background:#2a2a33;color:#5d5d6b}.sq.me{background:var(--hot);color:#1b0b00;font-weight:800;border-color:var(--hot)}
+  .sqp{flex:1;display:flex;flex-direction:column;gap:12px}
+  .sqp h3{font-size:32px}.sqp p{font-size:20px;color:var(--mute)}
+  .prow{display:flex;gap:10px}
+  .big{padding:18px 24px;border-radius:16px;background:var(--panel2);border:2px solid var(--line);font-size:24px;text-align:center}
+  .big.on{background:var(--lime);color:#10200a;font-weight:800}
+  .tot{font-size:46px;font-weight:900;color:var(--lime)}
+  .pay{display:flex;flex-direction:column;gap:10px}
+  .cab{position:absolute;right:26px;bottom:20px;font-size:20px;padding:10px 20px;border-radius:999px;background:var(--hot);color:#1b0b00;font-weight:800;border:2px solid transparent}
+  .tb{display:flex;gap:14px;align-items:center;margin:6px 0 10px}
+  .tb .pill{font-size:20px;padding:10px 22px}
+  .tb .info{margin-left:auto;font-size:20px;color:var(--mute)}
+  .azr{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding:8px;border:2px solid transparent;border-radius:14px}
+  .azr span{width:40px;height:40px;border-radius:9px;background:var(--panel2);display:grid;place-items:center;font-size:18px;color:var(--mute)}
+  .azr span.on{background:var(--hot);color:#1b0b00;font-weight:800}
+  .setw{display:flex;gap:26px;margin-top:10px}
+  .setc{flex:1;background:var(--panel);border:2px solid var(--line);border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:12px}
+  .setc h3{font-size:30px}.setc p{font-size:20px;color:var(--mute)}
+  .inp{width:100%;font-size:24px;padding:14px 18px;border-radius:14px;background:var(--panel2);border:2px solid var(--line);color:var(--text);font-family:inherit;outline:none}
+  .inp.focus{border-color:var(--hot)}
+  .stat{font-size:22px;color:var(--lime);min-height:30px}
+  #toast{position:fixed;left:50%;top:20px;transform:translateX(-50%);background:#3a1e0a;border:1px solid var(--hot);padding:10px 20px;border-radius:12px;font-size:15px;display:none;z-index:100}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="stage">
+  <div id="rail">
+    <div class="brand">MaZze <b>Sports</b></div>
+    <div class="ri f on" data-s="home"><i>&#127968;</i>Home</div>
+    <div class="ri f" data-s="mv"><i>&#9638;</i>Multiview</div>
+    <div class="ri f" data-s="ch"><i>&#128250;</i>Channels</div>
+    <div class="ri f" data-s="sq"><i>&#127922;</i>Squares</div>
+    <div class="ri f" data-s="st"><i>&#9881;</i>Settings</div>
+    <div class="sep">MY SPORTS</div>
+    <div class="ri f" data-t="Football"><i>&#127944;</i>Football</div>
+    <div class="ri f" data-t="Basketball"><i>&#127936;</i>Basketball</div>
+    <div class="ri f" data-t="Soccer"><i>&#9917;</i>Soccer</div>
+    <div class="ri f" data-t="Hockey"><i>&#127954;</i>Hockey</div>
+    <div class="ri f" data-t="Fights"><i>&#129354;</i>Fights</div>
+  </div>
+  <div id="main">
+    <section class="screen on" id="home">
+      <div class="top"><h2>Good evening</h2><span id="hdr">Loading live scores...</span></div>
+      <div class="hrow">
+        <div class="prev f" data-act="play" data-g="0">
+          <div class="pitch"></div>
+          <div class="sb" id="hsb"></div>
+          <div class="cab f" data-act="sqgame" data-g="0" style="z-index:6">&#127922; Play Squares</div><div class="pinfo" id="hinfo"></div>
+        </div>
+        <div class="side">
+          <h4>UP NEXT</h4>
+          <div class="tm f" id="t0" data-act="sqgame" data-g="0"><span class="dot"></span><b>-</b><em>-</em></div>
+          <div class="tm f" id="t1" data-act="sqgame" data-g="0"><span class="dot"></span><b>-</b><em>-</em></div>
+          <div class="tm f" id="t2" data-act="sqgame" data-g="0"><span class="dot"></span><b>-</b><em>-</em></div>
+          <div class="tm f" id="t3" data-act="sqgame" data-g="0"><span class="dot"></span><b>-</b><em>-</em></div>
+          <h4>SPOILER-FREE MODE</h4>
+          <div class="tm f" data-act="toggle"><b>Spoiler-free scores</b><em id="sp2">OFF</em></div>
+        </div>
+      </div>
+      <div class="strip">
+        <div class="gc f" id="c0" data-act="watch" data-g="0"></div>
+        <div class="gc f" id="c1" data-act="watch" data-g="0"></div>
+        <div class="gc f" id="c2" data-act="watch" data-g="0"></div>
+        <div class="gc f" id="c3" data-act="watch" data-g="0"></div>
+        <div class="gc f" id="c4" data-act="watch" data-g="0"></div>
+      </div>
+    </section>
+    <section class="screen" id="sq">
+      <div class="top"><h2>Squares</h2><span>Pick your squares for a live game &middot; pay on the secure ParlayPro site</span></div>
+      <div class="gp" id="gp"></div>
+      <div class="sqw">
+        <div class="sqb"><div class="grid" id="grid"></div></div>
+        <div class="sqp">
+          <h3 id="sqt">-</h3>
+          <p>Numbers are drawn at random once 75% of squares are sold. Refundable if the board does not fill.</p>
+          <p>Price per square</p>
+          <div class="prow" id="pr"></div>
+          <p>Your squares: <b id="cnt">0</b></p>
+          <div class="tot" id="tot">$0</div>
+          <div class="pay">
+            <div class="big f" data-act="pay" data-p="Cash App">Pay with Cash App</div>
+            <div class="big f" data-act="pay" data-p="PayPal">Pay with PayPal</div>
+            <div class="big f" data-act="pay" data-p="Card">Pay with Card</div>
+            <div class="big f" data-act="clear">Clear my picks</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="screen" id="mv">
+      <div class="top"><h2>Multi-view</h2><span id="stamp">Live data from ESPN</span></div>
+      <div class="mv">
+        <div class="mvc f" data-act="sound" data-g="0"><div class="sb" id="ms0"></div><div class="nm" id="mn0"></div></div>
+        <div class="mvc f" data-act="sound" data-g="1"><div class="sb" id="ms1"></div><div class="nm" id="mn1"></div></div>
+        <div class="mvc f" data-act="sound" data-g="2"><div class="sb" id="ms2"></div><div class="nm" id="mn2"></div></div>
+        <div class="mvc f" data-act="sound" data-g="3"><div class="sb" id="ms3"></div><div class="nm" id="mn3"></div></div>
+      </div>
+    </section>
+    <section class="screen" id="ch">
+      <div class="top"><h2>Channels</h2><span id="chinfo">Add a playlist in Settings</span></div>
+      <div class="tb"><div class="pill f" id="chmode" data-act="chmode">Sports only</div><div class="pill f" data-act="chgroup" id="chgrp">All groups</div><div class="info" id="chcount"></div></div>
+      <div class="cw">
+        <div class="cl" id="chl"></div>
+        <div class="cp">
+          <h3 id="chn">No channel</h3><p id="chg">-</p>
+          <p>Press OK on a channel to watch it full screen. Up/Down changes channel while watching.</p>
+          <div class="azr f" id="azs" data-act="az"></div>
+        </div>
+      </div>
+    </section>
+    <section class="screen" id="st">
+      <div class="top"><h2>Settings</h2><span id="ver">Version -</span></div>
+      <div class="setw">
+        <div class="setc">
+          <h3>Playlist</h3>
+          <div class="tb"><div class="pill f" data-act="pm" data-m="m3u" id="pm_m3u">M3U URL</div><div class="pill f" data-act="pm" data-m="xt" id="pm_xt">Xtream login</div></div>
+          <div id="box_m3u"><p>M3U playlist link</p><input class="inp f" id="in_m3u" type="text" placeholder="http://..."></div>
+          <div id="box_xt" style="display:none"><p>Server (with port)</p><input class="inp f" id="in_srv" type="text" placeholder="http://server:port"><p>Username</p><input class="inp f" id="in_usr" type="text"><p>Password</p><input class="inp f" id="in_pwd" type="password"></div>
+          <div class="big f" data-act="loadpl">Save and load playlist</div>
+          <div class="stat" id="pstat"></div>
+        </div>
+        <div class="setc">
+          <h3>App</h3>
+          <div class="big f" data-act="toggle"><span>Spoiler-free scores: </span><b id="sp">OFF</b></div>
+          <div class="big f" data-act="upd">Check for updates</div>
+          <div class="big f" data-act="clearpl">Remove playlist</div>
+          <p id="ustat"></p>
+          <p>Live scores come from ESPN. Squares payments open on parlaypro-squares.netlify.app.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</div></div>
+<div id="toast"></div>
+<script>
+(function(){
+var A=window.Android||null;
+var stage=document.getElementById('stage');
+function fit(){stage.style.transform='scale('+Math.min(innerWidth/1920,innerHeight/1080)+')'}
+addEventListener('resize',fit);fit();
+var cur=null;
+function vis(e){return e.offsetParent!==null}
+function list(){var s=document.querySelector('.screen.on');return [].slice.call(document.querySelectorAll('#rail .f')).concat([].slice.call(s.querySelectorAll('.f'))).filter(vis)}
+function focus(e){if(cur)cur.classList.remove('focus');cur=e;if(e){e.classList.add('focus')}}
+function toast(t){var e=document.getElementById('toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(function(){e.style.display='none'},2600)}
+function show(id){[].forEach.call(document.querySelectorAll('.screen'),function(s){s.classList.toggle('on',s.id===id)});
+  [].forEach.call(document.querySelectorAll('#rail .ri[data-s]'),function(r){r.classList.toggle('on',r.dataset.s===id)});
+  var s=document.getElementById(id).querySelector('.f');focus(s)}
+function c(e){var r=e.getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2}}
+function move(d){var a=c(cur),best=null,bd=1e9;
+  list().forEach(function(e){if(e===cur)return;var p=c(e),dx=p.x-a.x,dy=p.y-a.y,ok,pr,sc;
+    if(d==='right'){ok=dx>8&&Math.abs(dy)<Math.abs(dx)*1.8;pr=dx;sc=Math.abs(dy)}
+    if(d==='left'){ok=dx<-8&&Math.abs(dy)<Math.abs(dx)*1.8;pr=-dx;sc=Math.abs(dy)}
+    if(d==='down'){ok=dy>8&&Math.abs(dx)<Math.abs(dy)*1.8;pr=dy;sc=Math.abs(dx)}
+    if(d==='up'){ok=dy<-8&&Math.abs(dx)<Math.abs(dy)*1.8;pr=-dy;sc=Math.abs(dx)}
+    if(!ok)return;var v=pr+sc*2;if(v<bd){bd=v;best=e}});
+  if(best)focus(best)}
+function sget(k,d){try{var v=localStorage.getItem(k);return v===null?d:v}catch(e){return d}}
+function sset(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+var cbs={},cid=0;
+window.__cb=function(id,err,text){var f=cbs[id];delete cbs[id];if(f)f(err,text)};
+function http(url,cb){
+  if(A&&A.httpGet){var id=++cid;cbs[id]=cb;A.httpGet(id,url)}
+  else fetch(url).then(function(r){return r.text()}).then(function(t){cb(null,t)}).catch(function(e){cb(String(e),'')})}
+
+var CH=[],VIEW=[],SPORTS=null,chPos=0,showAll=false,grp='',groups=[],plMode=sget('plmode','m3u');
+var SP_RE=/sport|espn|fox sports|\bfs1\b|\bfs2\b|nfl|nba|nhl|mlb|mls|nbc sports|cbs sports|bein|sky sports|tnt|dazn|fight|ufc|boxing|wwe|golf|tennis|racing|f1|nascar|soccer|football|basketball|hockey|baseball|premier|laliga|bundesliga|big ten|btn|sec network|acc network|bally|msg|nesn|yes network/i;
+function parseM3U(t){var L=t.split(/\r?\n/),out=[],i;
+  for(i=0;i<L.length;i++){var l=L[i];
+    if(l.indexOf('#EXTINF')===0){
+      var name=l.substring(l.lastIndexOf(',')+1).trim();
+      var tn=/tvg-name="([^"]*)"/.exec(l);if(!name&&tn)name=tn[1];
+      var g=/group-title="([^"]*)"/.exec(l);
+      var u='';for(var j=i+1;j<L.length;j++){var x=L[j].trim();if(x&&x.charAt(0)!=='#'){u=x;i=j;break}}
+      if(u)out.push({n:name||'Channel',g:g?g[1]:'',u:u})}}
+  return out}
+function setChannels(arr){
+  CH=arr;SPORTS=[];var gs={};
+  for(var i=0;i<CH.length;i++){var ch=CH[i];ch.k=(ch.n||'').toLowerCase();if(SP_RE.test(ch.g+' '+ch.n))SPORTS.push(i);if(ch.g)gs[ch.g]=1}
+  groups=Object.keys(gs).sort();
+  if(A&&A.setChannels){var p=[];for(i=0;i<CH.length;i++)p.push([CH[i].n,CH[i].u]);A.setChannels(JSON.stringify(p))}
+  grp='';buildView();renderCh();render();
+  document.getElementById('pstat').textContent=CH.length+' channels loaded, '+SPORTS.length+' look like sports';
+  document.getElementById('chinfo').textContent=CH.length?(CH.length+' channels'):'Add a playlist in Settings'}
+function buildView(){
+  var base=[],i;
+  if(showAll){for(i=0;i<CH.length;i++)base.push(i)}else base=SPORTS?SPORTS.slice():[];
+  if(grp)base=base.filter(function(x){return CH[x].g===grp});
+  VIEW=base;chPos=0;
+  document.getElementById('chmode').textContent=showAll?'All channels':'Sports only';
+  document.getElementById('chgrp').textContent=grp?grp:'All groups';
+  document.getElementById('chcount').textContent=VIEW.length+' shown'}
+function loadPlaylist(){
+  var st=document.getElementById('pstat');
+  if(plMode==='m3u'){
+    var u=document.getElementById('in_m3u').value.trim();if(!u){st.textContent='Enter an M3U link first';return}
+    sset('m3u',u);st.textContent='Loading playlist...';
+    http(u,function(err,t){if(err){st.textContent='Could not load: '+err;return}
+      var a=parseM3U(t);if(!a.length){st.textContent='No channels found in that link';return}setChannels(a)})}
+  else{
+    var s=document.getElementById('in_srv').value.trim(),us=document.getElementById('in_usr').value.trim(),pw=document.getElementById('in_pwd').value;
+    if(!s||!us||!pw){st.textContent='Enter server, username and password';return}
+    if(!/^https?:\/\//i.test(s))s='http://'+s;s=s.replace(/\/+$/,'');
+    sset('srv',s);sset('usr',us);sset('pwd',pw);st.textContent='Logging in...';
+    var base=s+'/player_api.php?username='+encodeURIComponent(us)+'&password='+encodeURIComponent(pw);
+    http(base+'&action=get_live_categories',function(e1,t1){
+      if(e1){st.textContent='Could not log in: '+e1;return}
+      var cats={};try{JSON.parse(t1).forEach(function(c){cats[c.category_id]=c.category_name})}catch(x){st.textContent='Login failed (check details)';return}
+      st.textContent='Loading channels...';
+      http(base+'&action=get_live_streams',function(e2,t2){
+        if(e2){st.textContent='Could not load channels: '+e2;return}
+        var arr=[];try{JSON.parse(t2).forEach(function(c){arr.push({n:c.name,g:cats[c.category_id]||'',u:s+'/live/'+us+'/'+pw+'/'+c.stream_id+'.ts'})})}catch(x){st.textContent='Channel list was not readable';return}
+        if(!arr.length){st.textContent='No channels returned';return}setChannels(arr)})})}}
+function applyMode(){
+  document.getElementById('box_m3u').style.display=plMode==='m3u'?'block':'none';
+  document.getElementById('box_xt').style.display=plMode==='xt'?'block':'none';
+  document.getElementById('pm_m3u').style.background=plMode==='m3u'?'var(--hot)':'';
+  document.getElementById('pm_m3u').style.color=plMode==='m3u'?'#1b0b00':'';
+  document.getElementById('pm_xt').style.background=plMode==='xt'?'var(--hot)':'';
+  document.getElementById('pm_xt').style.color=plMode==='xt'?'#1b0b00':''}
+
+var ROWS=9,azi=0,LET='#ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+function initCh(){var h='',i;for(i=0;i<ROWS;i++)h+='<div class="cr f" data-act="chplay" data-r="'+i+'"><i></i><b></b><em></em></div>';
+  document.getElementById('chl').innerHTML=h;
+  var a='';for(i=0;i<LET.length;i++)a+='<span class="'+(i===azi?'on':'')+'">'+LET[i]+'</span>';
+  document.getElementById('azs').innerHTML=a}
+function winStart(){return Math.max(0,Math.min(chPos-4,VIEW.length-ROWS))}
+function renderCh(){
+  var st=winStart(),rows=document.querySelectorAll('#chl .cr'),i;
+  for(i=0;i<ROWS;i++){var r=rows[i],idx=st+i,ch=VIEW[idx]!==undefined?CH[VIEW[idx]]:null;
+    r.style.visibility=ch?'visible':'hidden';
+    if(ch){r.children[0].textContent=idx+1;r.children[1].textContent=ch.n;r.children[2].textContent=ch.g;r.classList.toggle('on',idx===chPos)}}
+  var cc=VIEW[chPos]!==undefined?CH[VIEW[chPos]]:null;
+  document.getElementById('chn').textContent=cc?cc.n:'No channels';
+  document.getElementById('chg').textContent=cc?(cc.g||'Ungrouped'):'Add a playlist in Settings';
+  var sp=document.querySelectorAll('#azs span');for(i=0;i<sp.length;i++)sp[i].className=i===azi?'on':''}
+function chFocusRow(){var rows=document.querySelectorAll('#chl .cr');var i=chPos-winStart();if(rows[i])focus(rows[i])}
+function chStep(d){if(!VIEW.length)return;chPos=Math.max(0,Math.min(VIEW.length-1,chPos+d));renderCh();chFocusRow()}
+function azJump(){var L=LET[azi];
+  for(var i=0;i<VIEW.length;i++){var n=CH[VIEW[i]].n.replace(/^[^A-Za-z0-9]+/,'').toUpperCase();var f=n.charAt(0);
+    if(L==='#'?(f>='0'&&f<='9'):f===L){chPos=i;renderCh();toast('Jumped to '+L);return}}
+  toast('No channels starting with '+L)}
+function playChannelIdx(gi){
+  var pos=VIEW.indexOf(gi),order=VIEW;if(pos<0){order=[gi];pos=0}
+  if(A&&A.play)A.play(JSON.stringify(order),pos);else toast('Playing: '+CH[gi].n)}
+
+var GAMES=[{id:'x',t:'Loading...',a:'-',b:'-',an:'',bn:'',m:'Sports',as:'',hs:'',st:'pre',d:'',lg:''}];var spoil=sget('spoil','0')==='1';
+var PRICES=[5,10,20],price=10,gi=0,BD={};
+function bd(g){var id=g.id;if(!BD[id]){var tk={},sel={},n=0;for(var q=0;q<id.length;q++)n+=id.charCodeAt(q);for(var i=0;i<100;i++){if((i*7+n)%5<2)tk[i]=1}BD[id]={tk:tk,sel:sel}}return BD[id]}
+function drawSq(){
+  var g=GAMES[gi]||GAMES[0],b=bd(g),h='<div class="ax t"></div><div class="ax t" style="grid-column:span 10">'+g.a+' (top)  /  '+g.b+' (side)</div>';
+  h+='<div class="ax"></div>';for(var c2=0;c2<10;c2++)h+='<div class="ax">?</div>';
+  for(var r=0;r<10;r++){h+='<div class="ax">?</div>';for(var c3=0;c3<10;c3++){var i=r*10+c3,k=b.tk[i]?'tk':(b.sel[i]?'me':'');h+='<div class="sq f '+k+'" data-act="cell" data-i="'+i+'">'+(b.tk[i]?'X':(b.sel[i]?'YOU':''))+'</div>'}}
+  document.getElementById('grid').innerHTML=h;
+  document.getElementById('sqt').textContent=g.t;
+  var n=Object.keys(b.sel).length;document.getElementById('cnt').textContent=n;document.getElementById('tot').textContent='$'+(n*price);
+  document.getElementById('gp').innerHTML=GAMES.map(function(x,j){return '<div class="pill f'+(j===gi?' on':'')+'" data-act="game" data-g="'+j+'">'+x.a+'@'+x.b+'</div>'}).join('');
+  document.getElementById('pr').innerHTML=PRICES.map(function(p){return '<div class="big f'+(p===price?' on':'')+'" data-act="price" data-p="'+p+'">$'+p+'</div>'}).join('')}
+function refocus(sel){var e=document.querySelector(sel);if(e)focus(e)}
+function openSq(g){gi=g;drawSq();show('sq')}
+var LG=[['football/nfl','Football','NFL'],['basketball/nba','Basketball','NBA'],['hockey/nhl','Hockey','NHL'],['soccer/usa.1','Soccer','MLS'],['baseball/mlb','Baseball','MLB'],['football/college-football','College','NCAAF'],['basketball/mens-college-basketball','College Hoops','NCAAB'],['soccer/eng.1','Soccer','EPL']];
+var last=0,okNet=true;
+function sc(g,w){if(g.st==='pre')return '-';if(spoil)return '•';return w==='a'?g.as:g.hs}
+function lab(g){return g.st==='in'?g.d:(g.st==='post'?'FINAL':g.d)}
+function bar(g){return '<div class="h">'+g.a+' '+sc(g,'a')+'</div><div>'+g.b+' '+sc(g,'h')+'</div><div style="color:var(--mute);font-weight:600">'+lab(g)+'</div>'}
+function norm(l,e){var cp=e.competitions[0],h,a;cp.competitors.forEach(function(x){if(x.homeAway==='home')h=x;else a=x});if(!h||!a)return null;var t=e.status.type;
+  return{id:l[0]+e.id,t:a.team.displayName+' vs '+h.team.displayName,a:a.team.abbreviation,b:h.team.abbreviation,an:a.team.name||'',bn:h.team.name||'',m:l[1]+' - '+l[2],lg:l[2],as:a.score||'0',hs:h.score||'0',st:t.state,d:t.shortDetail,dt:e.date}}
+function loadGames(){
+  var res=[],left=LG.length,bad=0;
+  LG.forEach(function(l,li){http('https://site.api.espn.com/apis/site/v2/sports/'+l[0]+'/scoreboard',function(err,t){
+    var r=null;if(!err){try{r=(JSON.parse(t).events||[]).map(function(e){return norm(l,e)}).filter(Boolean)}catch(x){r=null}}
+    if(r===null)bad++;res[li]=r||[];left--;
+    if(left===0){
+      if(bad===LG.length){okNet=false;render();return}
+      okNet=true;last=Date.now();var all=[];res.forEach(function(x){all=all.concat(x)});
+      var rank={in:0,pre:1,post:2};all.sort(function(x,y){if(rank[x.st]!==rank[y.st])return rank[x.st]-rank[y.st];return x.st==='post'?(y.dt>x.dt?1:-1):(x.dt>y.dt?1:-1)});
+      GAMES=all.slice(0,10);if(!GAMES.length)GAMES=[{id:'x',t:'No games',a:'-',b:'-',an:'',bn:'',m:'Sports',as:'',hs:'',st:'pre',d:'',lg:''}];if(gi>=GAMES.length)gi=0;
+      render();if(document.getElementById('sq').classList.contains('on'))document.getElementById('sqt').textContent=(GAMES[gi]||GAMES[0]).t}})})}
+function matchChannel(g){
+  if(!CH.length)return -1;
+  var an=g.an.toLowerCase(),bn=g.bn.toLowerCase(),aa=g.a.toLowerCase(),ba=g.b.toLowerCase(),lg=g.lg.toLowerCase(),i,k;
+  var pool=SPORTS&&SPORTS.length?SPORTS:CH.map(function(_,x){return x});
+  for(i=0;i<pool.length;i++){k=CH[pool[i]].k;if((an&&bn&&k.indexOf(an)>=0&&k.indexOf(bn)>=0)||(k.indexOf(aa)>=0&&k.indexOf(ba)>=0&&aa.length>1))return pool[i]}
+  for(i=0;i<pool.length;i++){k=CH[pool[i]].k;if((an.length>3&&k.indexOf(an)>=0)||(bn.length>3&&k.indexOf(bn)>=0))return pool[i]}
+  for(i=0;i<pool.length;i++){k=CH[pool[i]].k;if(lg&&k.indexOf(lg)>=0)return pool[i]}
+  return -1}
+function playGame(g){
+  var ci=matchChannel(g);
+  if(ci<0){toast(CH.length?'No channel matched this game - pick one in Channels':'Add a playlist in Settings first');show(CH.length?'ch':'st');return}
+  playChannelIdx(ci)}
+function render(){var G=GAMES,live=G.filter(function(g){return g.st==='in'}).length,h=G[0];
+  document.getElementById('hdr').textContent=live+' live now · '+G.length+' games shown'+(okNet?'':' · offline, showing last data');
+  document.getElementById('stamp').textContent='Live data from ESPN · updated '+(last?new Date(last).toLocaleTimeString():'-')+(spoil?' · spoiler-free':'');
+  document.getElementById('sp').textContent=spoil?'ON':'OFF';document.getElementById('sp2').textContent=spoil?'ON':'OFF';
+  document.getElementById('hsb').innerHTML=bar(h);
+  document.getElementById('hinfo').innerHTML='<h3>'+(h.st==='in'?'<span class="tag">LIVE</span>':'')+h.t+'</h3><p>'+h.m+' · '+lab(h)+' · press OK to watch on your playlist</p>';
+  var k,g,e;
+  for(k=0;k<4;k++){g=G[6+k]||G[(k+1)%G.length];e=document.getElementById('t'+k);e.dataset.g=G.indexOf(g);e.innerHTML='<span class="dot'+(g.st==='in'?' l':'')+'"></span><b>'+g.a+' @ '+g.b+'</b><em>'+(g.st==='pre'?lab(g):(g.st==='in'?'LIVE · ':'FINAL · ')+sc(g,'a')+'-'+sc(g,'h'))+'</em>'}
+  for(k=0;k<5;k++){g=G[1+k]||G[k%G.length];e=document.getElementById('c'+k);e.dataset.g=G.indexOf(g);e.innerHTML='<span class="lg">'+g.m.split(' - ').pop().toUpperCase()+'</span>'+(g.st==='in'?'<span class="lv">LIVE</span>':'')+'<div class="ln w"><span>'+g.a+'</span><span>'+sc(g,'a')+'</span></div><div class="ln l"><span>'+g.b+'</span><span>'+sc(g,'h')+'</span></div><div class="ft">'+lab(g)+'</div>'}
+  for(k=0;k<4;k++){g=G[k]||G[0];document.getElementById('ms'+k).innerHTML=bar(g);document.getElementById('mn'+k).textContent=g.m+' · '+g.t;document.getElementById('ms'+k).parentNode.dataset.g=G.indexOf(g)}}
+
+function checkUpdate(){
+  var u=document.getElementById('ustat'),mine=A&&A.versionCode?A.versionCode():0;
+  u.textContent='Checking...';
+  http('https://api.github.com/repos/Blkmaze/MaZze-Sports-Claude-Android/releases/tags/Claude-latest',function(err,t){
+    if(err){u.textContent='Could not check: '+err;return}
+    var j;try{j=JSON.parse(t)}catch(x){u.textContent='Could not read update info';return}
+    var m=/Automated build (\d+)/.exec(j.body||'');var n=m?parseInt(m[1],10):0;
+    if(!n){u.textContent='No update info found';return}
+    if(n<=mine){u.textContent='You are up to date (build '+mine+')';return}
+    var url=j.assets&&j.assets[0]&&j.assets[0].browser_download_url;
+    if(!url){u.textContent='Update found but no file';return}
+    u.textContent='Downloading build '+n+'...';
+    if(A&&A.installApk)A.installApk(url);else u.textContent='Update available: build '+n})}
+
+function sel(){if(!cur)return;
+  if(cur.tagName==='INPUT'){cur.focus();return}
+  if(cur.dataset.s){show(cur.dataset.s);return}
+  if(cur.dataset.t&&cur.classList.contains('ri')){toast('Pick a game from Home or Channels');return}
+  var a=cur.dataset.act;
+  if(a==='play'||a==='watch'||a==='sound'){playGame(GAMES[+cur.dataset.g]||GAMES[0])}
+  else if(a==='sqgame')openSq(+cur.dataset.g||0);
+  else if(a==='game'){gi=+cur.dataset.g;drawSq();refocus('#gp .pill:nth-child('+(gi+1)+')')}
+  else if(a==='price'){price=+cur.dataset.p;var k=[].indexOf.call(cur.parentNode.children,cur);drawSq();refocus('#pr .big:nth-child('+(k+1)+')')}
+  else if(a==='cell'){var i=+cur.dataset.i,b=bd(GAMES[gi]);if(b.tk[i]){toast('That square is taken')}else{if(b.sel[i])delete b.sel[i];else b.sel[i]=1;drawSq();refocus('.sq[data-i="'+i+'"]')}}
+  else if(a==='clear'){bd(GAMES[gi]).sel={};drawSq();refocus('[data-act=clear]')}
+  else if(a==='pay'){var n=Object.keys(bd(GAMES[gi]).sel).length;
+    if(!n){toast('Pick at least one square first')}
+    else{toast('Opening '+cur.dataset.p+' checkout for $'+(n*price)+' on parlaypro-squares.netlify.app');if(A&&A.openUrl)A.openUrl('https://parlaypro-squares.netlify.app/')}}
+  else if(a==='toggle'){spoil=!spoil;sset('spoil',spoil?'1':'0');render();toast('Spoiler-free '+(spoil?'ON':'OFF'))}
+  else if(a==='chplay'){var gi2=VIEW[winStart()+(+cur.dataset.r)];if(gi2!==undefined)playChannelIdx(gi2)}
+  else if(a==='chmode'){showAll=!showAll;buildView();renderCh()}
+  else if(a==='chgroup'){var gl=[''].concat(groups),ix=gl.indexOf(grp);grp=gl[(ix+1)%gl.length];buildView();renderCh()}
+  else if(a==='az'){azJump();chFocusRow()}
+  else if(a==='pm'){plMode=cur.dataset.m;sset('plmode',plMode);applyMode()}
+  else if(a==='loadpl')loadPlaylist();
+  else if(a==='clearpl'){sset('m3u','');sset('srv','');sset('usr','');sset('pwd','');setChannels([]);document.getElementById('pstat').textContent='Playlist removed'}
+  else if(a==='upd')checkUpdate()}
+window.__back=function(){
+  var ae=document.activeElement;
+  if(ae&&ae.tagName==='INPUT'){ae.blur();return true}
+  if(!document.querySelector('#home').classList.contains('on')){show('home');return true}
+  return false};
+addEventListener('keydown',function(e){var k=e.key,ae=document.activeElement;
+  if(ae&&ae.tagName==='INPUT'){
+    if(k==='Enter'||k==='ArrowDown'||k==='ArrowUp'||k==='Escape'){ae.blur();e.preventDefault();if(k==='ArrowDown')move('down');if(k==='ArrowUp')move('up')}
+    return}
+  if(cur&&cur.classList.contains('cr')&&(k==='ArrowDown'||k==='ArrowUp')){e.preventDefault();chStep(k==='ArrowDown'?1:-1);return}
+  if(cur&&cur.id==='azs'&&(k==='ArrowLeft'||k==='ArrowRight')){e.preventDefault();azi=Math.max(0,Math.min(LET.length-1,azi+(k==='ArrowRight'?1:-1)));renderCh();return}
+  if(k.indexOf('Arrow')===0){e.preventDefault();move(k.replace('Arrow','').toLowerCase())}
+  else if(k==='Enter'||k===' '){e.preventDefault();sel()}
+  else if(k==='Escape'||k==='Backspace'){window.__back()}});
+addEventListener('click',function(e){var t=e.target.closest('.f');if(t){focus(t);sel()}});
+
+initCh();applyMode();
+document.getElementById('in_m3u').value=sget('m3u','');document.getElementById('in_srv').value=sget('srv','');document.getElementById('in_usr').value=sget('usr','');document.getElementById('in_pwd').value=sget('pwd','');
+document.getElementById('ver').textContent='Version '+(A&&A.versionCode?'1.0.'+A.versionCode()+' (build '+A.versionCode()+')':'web preview');
+render();renderCh();loadGames();setInterval(loadGames,20000);
+if((plMode==='m3u'&&sget('m3u',''))||(plMode==='xt'&&sget('srv','')))setTimeout(loadPlaylist,300);
+drawSq();focus(document.querySelector('#home .prev'));
+})();
+</script>
+</body>
+</html>

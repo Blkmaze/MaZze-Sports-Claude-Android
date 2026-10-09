@@ -238,7 +238,7 @@
           <h3>Squares payments</h3>
           <p>Cash App tag</p><input class="inp f" id="in_cash" type="text" placeholder="$yourtag">
           <p>PayPal.me name</p><input class="inp f" id="in_pp" type="text" placeholder="yourname">
-          <p>Zelle email or phone</p><input class="inp f" id="in_zel" type="text" placeholder="email or phone">
+          <p>Zelle email or phone</p><input class="inp f" id="in_zel" type="text" placeholder="email or phone"><p>Sync code (same on TV and phone, 8+ characters)</p><input class="inp f" id="in_sync" type="text" placeholder="make up a long code"><div class="big f" data-act="syncnow">Sync now</div><p id="syst"></p>
           <p>These build the QR codes. Money goes straight to you; the app never handles payments.</p>
         </div>
       </div>
@@ -364,7 +364,22 @@ var GAMES=[{id:'x',t:'Loading...',a:'-',b:'-',an:'',bn:'',m:'Sports',as:'',hs:''
 var PRICES=[5,10,20,25,50,100],price=+sget('bprice','10')||10,gi=0,qty=1,rst=0,LP=null,BD=(function(){try{return JSON.parse(sget('boards','{}'))||{}}catch(e){return {}}})();
 function shuf(sd){var a=[0,1,2,3,4,5,6,7,8,9],x=sd*9301+49297;for(var i=9;i>0;i--){x=(x*9301+49297)%233280;var j=Math.floor(x/233280*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
 function INI(){return (document.getElementById('in_ini').value||'').toUpperCase()}
-function save(){sset('boards',JSON.stringify(BD))}
+var SBU='https://vqjhblpxiudaahufceca.supabase.co',SBK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxamhibHB4aXVkYWFodWZjZWNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1NzkxNTIsImV4cCI6MjEwNzE1NTE1Mn0.THFt3Ith_Q7H8RT4wP88KCU_fjLqZTl6x_T2UscOQW8',dsq=0,dsent=0,lastSync='',syncing=false,syT=0;
+function setSt(t){var e=document.getElementById('syst');if(e)e.textContent=t}
+function syncCode(){return (sget('syncode','')||'').trim()}
+function rpc(fn,body,cb){try{fetch(SBU+'/rest/v1/rpc/'+fn,{method:'POST',headers:{'apikey':SBK,'Authorization':'Bearer '+SBK,'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.text().then(function(t){cb(r.ok?null:('HTTP '+r.status),t)})}).catch(function(e){cb(String(e),'')})}catch(e){cb(String(e),'')}}
+function mergeBD(l,r){var o=JSON.parse(JSON.stringify(r||{})),k;for(k in l){if(!o[k]||!o[k].l){o[k]=l[k];continue}var lb=l[k].l||[],ob=o[k].l;lb.forEach(function(b,j){if(!ob[j]){ob[j]=b;return}var c;for(c in b.c)if(!ob[j].c[c])ob[j].c[c]=b.c[c]})}return o}
+function syncNow(manual){var code=syncCode();if(code.length<8){if(manual)toast('Type a sync code (8+ characters) in Settings first');return}
+  if(syncing)return;syncing=true;if(manual)setSt('Syncing...');
+  rpc('sq_get',{p_code:code},function(err,t){
+    if(err){syncing=false;setSt('Sync failed ('+err+'). Will retry.');return}
+    var rows=[];try{rows=JSON.parse(t)}catch(e){}
+    var r=rows[0],dirty=dsq!==dsent,push=dirty||!r,redraw=false;
+    if(r&&r.updated_at!==lastSync){if(dirty){BD=mergeBD(BD,r.data);push=true}else{BD=r.data||{};redraw=true}sset('boards',JSON.stringify(BD))}
+    if(redraw&&document.getElementById('sq').classList.contains('on')&&!document.getElementById('sq').classList.contains('mo')){drawSq();if(cur&&!document.body.contains(cur))refocus('#in_ini')}
+    if(push){var my=dsq;rpc('sq_put',{p_code:code,p_data:BD},function(e2,t2){syncing=false;if(e2){setSt('Sync failed ('+e2+'). Will retry.');return}try{lastSync=JSON.parse(t2)}catch(x){lastSync=''}dsent=my;setSt('Synced '+new Date().toLocaleTimeString())})}
+    else{syncing=false;lastSync=r?r.updated_at:lastSync;setSt('Synced '+new Date().toLocaleTimeString())}})}
+function save(){sset('boards',JSON.stringify(BD));dsq++;if(syncCode().length>=8){clearTimeout(syT);syT=setTimeout(function(){syncNow(false)},1500)}}
 function nb(p){return{p:p,c:{},top:shuf(Math.floor(Math.random()*1e6)),side:shuf(Math.floor(Math.random()*1e6))}}
 function SGm(){return GAMES[gi]||GAMES[0]}
 function bd(g){var id=g.id;if(!BD[id]||!BD[id].l||!BD[id].l.length)BD[id]={bi:0,l:[nb(price)]};return BD[id]}
@@ -469,8 +484,8 @@ function drawGd(){
   document.getElementById('gdf').innerHTML=f;
   document.getElementById('gdl').innerHTML=h||'<p style="font-size:24px;color:var(--mute)">Nothing scheduled here yet. Tomorrow games load a moment after you open the Guide.</p>';
   if(cur&&!document.body.contains(cur)){var f1=document.querySelector('#gd .f');if(f1)focus(f1)}}
-function initPay(){[['in_cash','cashtag','$7707438091'],['in_pp','ppme','williemayes'],['in_zel','zelle','']].forEach(function(x){var e=document.getElementById(x[0]);e.value=sget(x[1],x[2]);e.addEventListener('input',function(){sset(x[1],e.value.trim())})})}
-initPay();
+function initPay(){[['in_cash','cashtag','$7707438091'],['in_pp','ppme','williemayes'],['in_zel','zelle',''],['in_sync','syncode','']].forEach(function(x){var e=document.getElementById(x[0]);e.value=sget(x[1],x[2]);e.addEventListener('input',function(){sset(x[1],e.value.trim());if(x[0]==='in_sync'){lastSync='';clearTimeout(syT);syT=setTimeout(function(){syncNow(true)},2500)}})})}
+initPay();setTimeout(function(){syncNow(false)},3000);setInterval(function(){if(syncCode().length>=8)syncNow(false)},15000);
 function matchChannel(g){
   if(!CH.length)return -1;
   var an=g.an.toLowerCase(),bn=g.bn.toLowerCase(),aa=g.a.toLowerCase(),ba=g.b.toLowerCase(),lg=g.lg.toLowerCase(),i,k;
@@ -535,6 +550,7 @@ function sel(){if(!cur)return;
   else if(a==='relpend'){var b7=cb(),n7=0,k7;for(k7 in b7.c)if(b7.c[k7].s==='p'){delete b7.c[k7];n7++}save();drawSq();toast(n7+' pending squares released');refocus('[data-act="relpend"]')}
   else if(a==='relbuy'){var b8=cb(),n8=0,k8,ii=INI();if(ii.length<3){toast('Type the buyer initials first');refocus('#in_ini')}else{for(k8 in b8.c)if(b8.c[k8].i===ii){delete b8.c[k8];n8++}save();drawSq();toast(n8+' squares removed for '+ii);refocus('[data-act="relbuy"]')}}
   else if(a==='resetb'){if(!rst){rst=1;toast('Press Reset board again to wipe every square on this board');setTimeout(function(){rst=0},4000)}else{rst=0;var b9=cb();b9.c={};b9.top=shuf(Math.floor(Math.random()*1e6));b9.side=shuf(Math.floor(Math.random()*1e6));save();drawSq();toast('Board reset - new numbers drawn');refocus('[data-act="resetb"]')}}
+  else if(a==='syncnow')syncNow(true);
   else if(a==='gdf'){gdf=cur.dataset.v;gdp=0;drawGd();refocus('#gdf .pill[data-v="'+gdf+'"]')}
   else if(a==='gdpg'){var dd=cur.dataset.d;gdp+=+dd;drawGd();refocus('#gdf .pill[data-d="'+dd+'"]')}
   else if(a==='gdplay'){var gg=GDL[+cur.dataset.k];if(gg)playGame(gg)}

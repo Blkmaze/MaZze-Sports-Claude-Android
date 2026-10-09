@@ -116,6 +116,7 @@
   #gdl{display:flex;flex-direction:column;gap:8px;margin-top:6px}.gdp{font-size:18px;color:var(--mute);padding:0 10px}
   .nm{right:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:22px}
   .cp p{font-size:20px}
+  .ri{padding:7px 14px;font-size:21px}
 </style>
 </head>
 <body>
@@ -126,6 +127,8 @@
     <div class="ri f" data-s="gd"><i>&#128197;</i>Guide</div>
     <div class="ri f" data-s="mv"><i>&#9638;</i>Multiview</div>
     <div class="ri f" data-s="ch"><i>&#128250;</i>Channels</div>
+    <div class="ri f" data-fv="fav"><i>&#9733;</i>Favorites</div>
+    <div class="ri f" data-fv="rec"><i>&#128337;</i>Recent</div>
     <div class="ri f" data-s="sq"><i>&#127922;</i>Squares</div>
     <div class="ri f" data-s="st"><i>&#9881;</i>Settings</div>
     <div class="sep">MY SPORTS</div>
@@ -207,12 +210,12 @@
     </section>
     <section class="screen" id="ch">
       <div class="top"><h2>Channels</h2><span id="chinfo">Add a playlist in Settings</span></div>
-      <div class="tb"><div class="pill f" id="chmode" data-act="chmode">Sports only</div><div class="pill f" data-act="chgroup" id="chgrp">All groups</div><div class="info" id="chcount"></div></div>
+      <div class="tb"><div class="pill f" id="chmode" data-act="chmode">Sports only</div><div class="pill f" data-act="chgroup" id="chgrp">All groups</div><div class="pill f" id="chfv" data-act="chview" data-v="fav">&#9733; Favorites</div><div class="pill f" id="chrc" data-act="chview" data-v="rec">Recent</div><div class="info" id="chcount"></div></div>
       <div class="cw">
         <div class="cl" id="chl"></div>
         <div class="cp">
           <h3 id="chn">No channel</h3><p id="chg">-</p>
-          <p>OK to watch. Up/Down changes channel.</p>
+          <p>OK to watch. Up/Down changes channel. Menu button = favorite.</p><div class="big f" id="chfav" data-act="chfav">&#9734; Add to favorites</div>
           <div class="azr f" id="azs" data-act="az"></div>
         </div>
       </div>
@@ -251,6 +254,7 @@
 <script>
 (function(){
 var A=window.Android||null;
+var FAV=(function(){try{return JSON.parse(localStorage.getItem('favs')||'[]')}catch(e){return []}})(),REC=(function(){try{return JSON.parse(localStorage.getItem('recs')||'[]')}catch(e){return []}})(),chv='';
 var stage=document.getElementById('stage');
 function fit(){var w=window.innerWidth||document.documentElement.clientWidth||screen.width||1920,h=window.innerHeight||document.documentElement.clientHeight||screen.height||1080;var k=Math.min(w/1920,h/1080);if(!(k>0))k=1;stage.style.transform='scale('+k+')'}
 addEventListener('resize',fit);fit();setTimeout(fit,300);setTimeout(fit,1500);setInterval(fit,3000);
@@ -303,11 +307,13 @@ function buildView(){
   var base=[],i;
   if(showAll){for(i=0;i<CH.length;i++)base.push(i)}else base=SPORTS?SPORTS.slice():[];
   if(SPT){base=[];var re=SPRE[SPT];for(i=0;i<CH.length;i++){if(re.test(CH[i].g+' '+CH[i].n))base.push(i)}}
+  if(chv==='fav'){base=[];for(i=0;i<CH.length;i++)if(FAV.indexOf(CH[i].n)>=0)base.push(i)}
+  if(chv==='rec'){base=[];REC.forEach(function(n){for(i=0;i<CH.length;i++)if(CH[i].n===n){base.push(i);break}})}
   if(grp)base=base.filter(function(x){return CH[x].g===grp});
   VIEW=base;chPos=0;
   document.getElementById('chmode').textContent=SPT?(SPT+' only - OK for all sports'):(showAll?'All channels':'Sports only');
   document.getElementById('chgrp').textContent=grp?grp:'All groups';
-  document.getElementById('chcount').textContent=VIEW.length+' shown'}
+  document.getElementById('chfv').classList.toggle('on',chv==='fav');document.getElementById('chrc').classList.toggle('on',chv==='rec');document.getElementById('chcount').textContent=VIEW.length+' shown'}
 function loadPlaylist(){
   var st=document.getElementById('pstat');
   if(plMode==='m3u'){
@@ -347,9 +353,9 @@ function renderCh(){
   var st=winStart(),rows=document.querySelectorAll('#chl .cr'),i;
   for(i=0;i<ROWS;i++){var r=rows[i],idx=st+i,ch=VIEW[idx]!==undefined?CH[VIEW[idx]]:null;
     r.style.visibility=ch?'visible':'hidden';
-    if(ch){r.children[0].textContent=idx+1;r.children[1].textContent=ch.n;r.children[2].textContent=ch.g;r.classList.toggle('on',idx===chPos)}}
+    if(ch){r.children[0].textContent=idx+1;r.children[1].textContent=(FAV.indexOf(ch.n)>=0?'\u2605 ':'')+ch.n;r.children[2].textContent=ch.g;r.classList.toggle('on',idx===chPos)}}
   var cc=VIEW[chPos]!==undefined?CH[VIEW[chPos]]:null;
-  document.getElementById('chn').textContent=cc?cc.n:'No channels';
+  document.getElementById('chn').textContent=cc?cc.n:(chv==='fav'?'No favorites yet':(chv==='rec'?'Nothing played yet':'No channels'));var fb=document.getElementById('chfav');if(fb)fb.textContent=cc&&FAV.indexOf(cc.n)>=0?'\u2605 Remove from favorites':'\u2606 Add to favorites';
   document.getElementById('chg').textContent=cc?(cc.g||'Ungrouped'):'Add a playlist in Settings';
   var sp=document.querySelectorAll('#azs span');for(i=0;i<sp.length;i++)sp[i].className=i===azi?'on':''}
 function chFocusRow(){var rows=document.querySelectorAll('#chl .cr');var i=chPos-winStart();if(rows[i])focus(rows[i])}
@@ -358,7 +364,8 @@ function azJump(){var L=LET[azi];
   for(var i=0;i<VIEW.length;i++){var n=CH[VIEW[i]].n.replace(/^[^A-Za-z0-9]+/,'').toUpperCase();var f=n.charAt(0);
     if(L==='#'?(f>='0'&&f<='9'):f===L){chPos=i;renderCh();toast('Jumped to '+L);return}}
   toast('No channels starting with '+L)}
-function playChannelIdx(gi){
+function toggleFav(){var c=VIEW[chPos]!==undefined?CH[VIEW[chPos]]:null;if(!c)return;var k=FAV.indexOf(c.n);if(k>=0){FAV.splice(k,1);toast('Removed from favorites: '+c.n)}else{FAV.unshift(c.n);toast('Added to favorites: '+c.n)}sset('favs',JSON.stringify(FAV));if(chv==='fav'){var keep=chPos;buildView();chPos=Math.min(keep,Math.max(0,VIEW.length-1))}renderCh()}
+function playChannelIdx(gi){var nm=CH[gi]&&CH[gi].n;if(nm){var q=REC.indexOf(nm);if(q>=0)REC.splice(q,1);REC.unshift(nm);if(REC.length>30)REC.length=30;sset('recs',JSON.stringify(REC))}
   var pos=VIEW.indexOf(gi),order=VIEW;if(pos<0){order=[gi];pos=0}
   if(A&&A.play)A.play(JSON.stringify(order),pos);else toast('Playing: '+CH[gi].n)}
 
@@ -535,8 +542,9 @@ function autoCheck(){
     if(n>mine){toast('Update available: build '+n+'. Open Settings, then Check for updates.');document.getElementById('ustat').textContent='Update available: build '+n}})}
 function sel(){if(!cur)return;
   if(cur.tagName==='INPUT'){cur.focus();return}
-  if(cur.dataset.s){if(cur.dataset.s==='gd'){loadTom();drawGd()}if(cur.dataset.s==='ch'&&SPT){SPT='';buildView();renderCh()}show(cur.dataset.s);return}
-  if(cur.dataset.t&&cur.classList.contains('ri')){if(!CH.length){toast('Add a playlist in Settings first');show('st');return}SPT=cur.dataset.t;grp='';buildView();renderCh();show('ch');if(!VIEW.length)toast('No '+SPT+' channels found in your playlist');return}
+  if(cur.dataset.fv){chv=cur.dataset.fv;grp='';SPT='';buildView();renderCh();show('ch');if(!VIEW.length)toast(chv==='fav'?'No favorites yet. Open a channel and press the star button.':'Nothing played yet');return}
+  if(cur.dataset.s){if(cur.dataset.s==='gd'){loadTom();drawGd()}if(cur.dataset.s==='ch'&&(SPT||chv)){SPT='';chv='';buildView();renderCh()}show(cur.dataset.s);return}
+  if(cur.dataset.t&&cur.classList.contains('ri')){if(!CH.length){toast('Add a playlist in Settings first');show('st');return}SPT=cur.dataset.t;grp='';chv='';buildView();renderCh();show('ch');if(!VIEW.length)toast('No '+SPT+' channels found in your playlist');return}
   var a=cur.dataset.act;
   if(a==='play'||a==='watch'||a==='sound'){playGame(GAMES[+cur.dataset.g]||GAMES[0])}
   else if(a==='sqgame')openSq(+cur.dataset.g||0);
@@ -552,6 +560,8 @@ function sel(){if(!cur)return;
   else if(a==='relpend'){var b7=cb(),n7=0,k7;for(k7 in b7.c)if(b7.c[k7].s==='p'){delete b7.c[k7];n7++}save();drawSq();toast(n7+' pending squares released');refocus('[data-act="relpend"]')}
   else if(a==='relbuy'){var b8=cb(),n8=0,k8,ii=INI();if(ii.length<3){toast('Type the buyer initials first');refocus('#in_ini')}else{for(k8 in b8.c)if(b8.c[k8].i===ii){delete b8.c[k8];n8++}save();drawSq();toast(n8+' squares removed for '+ii);refocus('[data-act="relbuy"]')}}
   else if(a==='resetb'){if(!rst){rst=1;toast('Press Reset board again to wipe every square on this board');setTimeout(function(){rst=0},4000)}else{rst=0;var b9=cb();b9.c={};b9.top=shuf(Math.floor(Math.random()*1e6));b9.side=shuf(Math.floor(Math.random()*1e6));save();drawSq();toast('Board reset - new numbers drawn');refocus('[data-act="resetb"]')}}
+  else if(a==='chfav')toggleFav();
+  else if(a==='chview'){var vv=cur.dataset.v;chv=chv===vv?'':vv;grp='';buildView();renderCh();if(chv&&!VIEW.length)toast(chv==='fav'?'No favorites yet. Open a channel and press the star button.':'Nothing played yet');refocus('#'+(vv==='fav'?'chfv':'chrc'))}
   else if(a==='syncnow')syncNow(true);
   else if(a==='gdf'){gdf=cur.dataset.v;gdp=0;drawGd();refocus('#gdf .pill[data-v="'+gdf+'"]')}
   else if(a==='gdpg'){var dd=cur.dataset.d;gdp+=+dd;drawGd();refocus('#gdf .pill[data-d="'+dd+'"]')}
@@ -577,6 +587,7 @@ addEventListener('keydown',function(e){var k=e.key,ae=document.activeElement;
     return}
   if(cur&&cur.classList.contains('cr')&&(k==='ArrowDown'||k==='ArrowUp')){e.preventDefault();chStep(k==='ArrowDown'?1:-1);return}
   if(cur&&cur.id==='azs'&&(k==='ArrowLeft'||k==='ArrowRight')){e.preventDefault();azi=Math.max(0,Math.min(LET.length-1,azi+(k==='ArrowRight'?1:-1)));renderCh();return}
+  if((k==='ContextMenu'||k==='f'||k==='F')&&cur&&cur.classList.contains('cr')){e.preventDefault();toggleFav();return}
   if(k.indexOf('Arrow')===0){e.preventDefault();move(k.replace('Arrow','').toLowerCase())}
   else if(k==='Enter'||k===' '){e.preventDefault();sel()}
   else if(k==='Escape'||k==='Backspace'){window.__back()}});

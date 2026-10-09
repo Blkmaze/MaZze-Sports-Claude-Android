@@ -120,7 +120,8 @@
   #rsp{display:contents}#rail{overflow-y:auto;scrollbar-width:none}#rail::-webkit-scrollbar{display:none}.ri,.brand,.sep{flex:none}
   .ri em.car{margin-left:auto;font-style:normal;font-size:16px;color:var(--mute)}
   .ri.sub{padding:5px 14px 5px 62px;font-size:19px}.ri.open{background:var(--panel2);color:var(--text)}
-  #tick{position:absolute;left:54px;right:54px;bottom:8px;height:40px;overflow:hidden;border-radius:12px;background:var(--panel);border:1px solid var(--line);display:flex;align-items:center}
+  #clk{position:absolute;right:54px;top:10px;height:38px;padding:0 20px;border-radius:12px;background:var(--panel);border:1px solid var(--line);font-size:26px;font-weight:800;line-height:38px;z-index:50;letter-spacing:1px}
+#tick{position:absolute;left:54px;right:54px;bottom:8px;height:40px;overflow:hidden;border-radius:12px;background:var(--panel);border:1px solid var(--line);display:flex;align-items:center}
   #tick .tl{flex:none;background:var(--hot);color:#1b0b00;font-weight:900;font-size:16px;letter-spacing:2px;padding:0 16px;height:100%;display:flex;align-items:center}
   #tkw{flex:1;overflow:hidden;white-space:nowrap}
   #tk{display:inline-block;white-space:nowrap;font-size:20px;color:var(--text);animation:tkm 90s linear infinite;padding-left:20px}
@@ -137,6 +138,7 @@
 </head>
 <body>
 <div id="wrap"><div id="stage">
+  <div id="clk"></div>
   <div id="tick"><div class="tl">HOT NOW</div><div id="tkw"><div id="tk"></div></div></div>
   <div id="rail">
     <div class="brand">MaZze <b>Sports</b></div>
@@ -664,6 +666,8 @@ if((plMode==='m3u'&&sget('m3u',''))||(plMode==='xt'&&sget('srv','')))setTimeout(
 var ii=document.getElementById('in_ini');ii.value=sget('ini','');ii.addEventListener('input',function(){this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');sset('ini',this.value);drawSq()});
 drawSq();focus(document.querySelector('#home .prev'));
 })();
+function tickClk(){var e=document.getElementById('clk');if(e){var d=new Date();e.textContent=d.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'})+'  '+d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}}
+tickClk();setInterval(tickClk,10000);
 </script>
 </body>
 </html>

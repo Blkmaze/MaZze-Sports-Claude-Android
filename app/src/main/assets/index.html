@@ -337,24 +337,38 @@ function drawSq(){
   document.getElementById('pr').innerHTML=PRICES.map(function(p){return '<div class="big f'+(p===price?' on':'')+'" data-act="price" data-p="'+p+'">$'+p+'</div>'}).join('')}
 function refocus(sel){var e=document.querySelector(sel);if(e)focus(e)}
 function openSq(g){gi=g;drawSq();show('sq')}
-var LG=[['football/nfl','Football','NFL'],['basketball/nba','Basketball','NBA'],['hockey/nhl','Hockey','NHL'],['soccer/usa.1','Soccer','MLS'],['baseball/mlb','Baseball','MLB'],['football/college-football','College','NCAAF'],['basketball/mens-college-basketball','College Hoops','NCAAB'],['soccer/eng.1','Soccer','EPL']];
+var LG=[['football/nfl','Football','NFL'],['basketball/nba','Basketball','NBA'],['hockey/nhl','Hockey','NHL'],['soccer/usa.1','Soccer','MLS'],['baseball/mlb','Baseball','MLB'],['football/college-football','College','NCAAF'],['basketball/mens-college-basketball','College Hoops','NCAAB'],['soccer/eng.1','Soccer','EPL'],['soccer/esp.1','Soccer','La Liga'],['soccer/ger.1','Soccer','Bundesliga'],['soccer/ita.1','Soccer','Serie A'],['soccer/fra.1','Soccer','Ligue 1'],['soccer/uefa.champions','Soccer','UCL'],['soccer/uefa.europa','Soccer','UEL'],['soccer/mex.1','Soccer','Liga MX'],['soccer/usa.nwsl','Soccer','NWSL'],['soccer/aus.1','Soccer','A-League'],['soccer/jpn.1','Soccer','J1'],['basketball/wnba','Basketball','WNBA'],['football/cfl','Football','CFL'],['hockey/mens-college-hockey','Hockey','NCAAH']];
 var last=0,okNet=true;
 function sc(g,w){if(g.st==='pre')return '-';if(spoil)return '•';return w==='a'?g.as:g.hs}
 function lab(g){return g.st==='in'?g.d:(g.st==='post'?'FINAL':g.d)}
 function bar(g){return '<div class="h">'+g.a+' '+sc(g,'a')+'</div><div>'+g.b+' '+sc(g,'h')+'</div><div style="color:var(--mute);font-weight:600">'+lab(g)+'</div>'}
 function norm(l,e){var cp=e.competitions[0],h,a;cp.competitors.forEach(function(x){if(x.homeAway==='home')h=x;else a=x});if(!h||!a)return null;var t=e.status.type;
   return{id:l[0]+e.id,t:a.team.displayName+' vs '+h.team.displayName,a:a.team.abbreviation,b:h.team.abbreviation,an:a.team.name||'',bn:h.team.name||'',m:l[1]+' - '+l[2],lg:l[2],as:a.score||'0',hs:h.score||'0',st:t.state,d:t.shortDetail,dt:e.date}}
+var CACHE={},NEXT={};
 function loadGames(){
-  var res=[],left=LG.length,bad=0;
-  LG.forEach(function(l,li){http('https://site.api.espn.com/apis/site/v2/sports/'+l[0]+'/scoreboard',function(err,t){
-    var r=null;if(!err){try{r=(JSON.parse(t).events||[]).map(function(e){return norm(l,e)}).filter(Boolean)}catch(x){r=null}}
-    if(r===null)bad++;res[li]=r||[];left--;
-    if(left===0){
-      if(bad===LG.length){okNet=false;render();return}
-      okNet=true;last=Date.now();var all=[];res.forEach(function(x){all=all.concat(x)});
-      var rank={in:0,pre:1,post:2};all.sort(function(x,y){if(rank[x.st]!==rank[y.st])return rank[x.st]-rank[y.st];return x.st==='post'?(y.dt>x.dt?1:-1):(x.dt>y.dt?1:-1)});
-      GAMES=all.slice(0,10);if(!GAMES.length)GAMES=[{id:'x',t:'No games',a:'-',b:'-',an:'',bn:'',m:'Sports',as:'',hs:'',st:'pre',d:'',lg:''}];if(gi>=GAMES.length)gi=0;
-      render();if(document.getElementById('sq').classList.contains('on'))document.getElementById('sqt').textContent=(GAMES[gi]||GAMES[0]).t}})})}
+  var res=[],left=LG.length,bad=0,now=Date.now();
+  function done(){
+    if(left>0)return;
+    if(bad===LG.length){okNet=false;render();return}
+    okNet=true;last=Date.now();var all=[];
+    res.forEach(function(x){all=all.concat(x||[])});
+    var rank={in:0,pre:1,post:2};
+    all.sort(function(x,y){if(rank[x.st]!==rank[y.st])return rank[x.st]-rank[y.st];return x.st==='post'?(y.dt>x.dt?1:-1):(x.dt>y.dt?1:-1)});
+    GAMES=all.slice(0,10);
+    if(!GAMES.length)GAMES=[{id:'x',t:'No games',a:'-',b:'-',an:'',bn:'',m:'Sports',as:'',hs:'',st:'pre',d:'',lg:''}];
+    if(gi>=GAMES.length)gi=0;
+    render();
+    if(document.getElementById('sq').classList.contains('on'))document.getElementById('sqt').textContent=(GAMES[gi]||GAMES[0]).t}
+  LG.forEach(function(l,li){
+    if(NEXT[li]&&NEXT[li]>now){res[li]=CACHE[li];left--;if(left===0)done();return}
+    http('https://site.api.espn.com/apis/site/v2/sports/'+l[0]+'/scoreboard',function(err,t){
+      var r=null;
+      if(!err){try{r=(JSON.parse(t).events||[]).map(function(e){return norm(l,e)}).filter(Boolean)}catch(x){r=null}}
+      if(r===null){bad++;r=CACHE[li]||[]}else{CACHE[li]=r}
+      var live=r.some(function(g){return g.st==='in'});
+      NEXT[li]=Date.now()+(live?15000:90000);
+      res[li]=r;left--;if(left===0)done()})});
+}
 function matchChannel(g){
   if(!CH.length)return -1;
   var an=g.an.toLowerCase(),bn=g.bn.toLowerCase(),aa=g.a.toLowerCase(),ba=g.b.toLowerCase(),lg=g.lg.toLowerCase(),i,k;

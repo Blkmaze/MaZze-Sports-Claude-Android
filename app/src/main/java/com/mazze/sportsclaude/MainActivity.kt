@@ -256,7 +256,35 @@ class PlayerActivity : Activity() {
             .setUserAgent("MaZzeSports/1.0")
             .setConnectTimeoutMs(15000)
             .setReadTimeoutMs(30000)
-        val p = ExoPlayer.Builder(this).setMediaSourceFactory(DefaultMediaSourceFactory(f)).build()
+        val lc = androidx.media3.exoplayer.DefaultLoadControl.Builder()
+            .setBufferDurationsMs(45000, 90000, 3000, 10000)
+            .setTargetBufferBytes(64 * 1024 * 1024)
+            .setPrioritizeTimeOverSizeThresholds(false)
+            .setBackBuffer(20000, false)
+            .build()
+        val ts = androidx.media3.exoplayer.trackselection.DefaultTrackSelector(this)
+        val p = ExoPlayer.Builder(this)
+            .setMediaSourceFactory(DefaultMediaSourceFactory(f))
+            .setLoadControl(lc)
+            .setTrackSelector(ts)
+            .build()
+        var stalls = 0
+        var wasReady = false
+        p.addListener(object : Player.Listener {
+            override fun onPlaybackStateChanged(state: Int) {
+                if (state == Player.STATE_READY) {
+                    wasReady = true
+                    h.postDelayed({ if (stalls > 0) stalls-- }, 120000)
+                } else if (state == Player.STATE_BUFFERING && wasReady) {
+                    stalls++
+                    if (stalls == 2) {
+                        ts.setParameters(ts.buildUponParameters().setMaxVideoSize(1280, 720))
+                    } else if (stalls >= 4) {
+                        ts.setParameters(ts.buildUponParameters().setMaxVideoSize(854, 480))
+                    }
+                }
+            }
+        })
         p.addListener(object : Player.Listener {
             override fun onPlayerError(error: PlaybackException) {
                 retry()

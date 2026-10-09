@@ -277,7 +277,7 @@
 <script>
 (function(){
 var A=window.Android||null;
-var FAV=(function(){try{return JSON.parse(localStorage.getItem('favs')||'[]')}catch(e){return []}})(),REC=(function(){try{return JSON.parse(localStorage.getItem('recs')||'[]')}catch(e){return []}})(),chv='',MYW=(function(){try{return (localStorage.getItem('myteams')||'atlanta,georgia').toLowerCase().split(',').map(function(x){return x.trim()}).filter(Boolean)}catch(e){return ['atlanta']}})(),NEWS=[],tkLast='',NNEXT=0;
+var FAV=(function(){try{return JSON.parse(localStorage.getItem('favs')||'[]')}catch(e){return []}})(),REC=(function(){try{return JSON.parse(localStorage.getItem('recs')||'[]')}catch(e){return []}})(),chv='',chq=[],MYW=(function(){try{return (localStorage.getItem('myteams')||'atlanta,georgia').toLowerCase().split(',').map(function(x){return x.trim()}).filter(Boolean)}catch(e){return ['atlanta']}})(),NEWS=[],tkLast='',NNEXT=0;
 var stage=document.getElementById('stage');
 function fit(){var w=window.innerWidth||document.documentElement.clientWidth||screen.width||1920,h=window.innerHeight||document.documentElement.clientHeight||screen.height||1080;var k=Math.min(w/1920,h/1080);if(!(k>0))k=1;stage.style.transform='scale('+k+')'}
 addEventListener('resize',fit);fit();setTimeout(fit,300);setTimeout(fit,1500);setInterval(fit,3000);
@@ -330,6 +330,7 @@ function buildView(){
   var base=[],i;
   if(showAll){for(i=0;i<CH.length;i++)base.push(i)}else base=SPORTS?SPORTS.slice():[];
   if(SPT){base=[];var re=SPRE[SPT];for(i=0;i<CH.length;i++){if(re.test(CH[i].g+' '+CH[i].n))base.push(i)}}
+  if(chq.length){base=[];for(i=0;i<CH.length;i++){var kk=CH[i].k||'';if(chq.some(function(t){return kk.indexOf(t)>=0}))base.push(i)}}
   if(chv==='fav'){base=[];for(i=0;i<CH.length;i++)if(FAV.indexOf(CH[i].n)>=0)base.push(i)}
   if(chv==='rec'){base=[];REC.forEach(function(n){for(i=0;i<CH.length;i++)if(CH[i].n===n){base.push(i);break}})}
   if(grp)base=base.filter(function(x){return CH[x].g===grp});
@@ -558,7 +559,7 @@ function matchChannel(g){
   return -1}
 function playGame(g){
   var ci=matchChannel(g);
-  if(ci<0){toast(CH.length?'No channel matched this game - pick one in Channels':'Add a playlist in Settings first');show(CH.length?'ch':'st');return}
+  if(ci<0){if(!CH.length){toast('Add a playlist in Settings first');show('st');return}chq=[g.an,g.bn,g.lg].map(function(x){return (x||'').toLowerCase()}).filter(function(x){return x.length>2});SPT='';chv='';grp='';buildView();renderCh();show('ch');toast(VIEW.length?'No exact channel found. Showing channels for '+g.a+' / '+g.b+'. Press OK on one.':'No channels found for '+g.a+' / '+g.b+'. Try the Guide or Channels.');return}
   playChannelIdx(ci)}
 function pri(g){var d=new Date().getDay();if(isMy(g))return 200;if(isSec(g)){return (new Date().getDay()===6?100:0)+(g.rk<=25?110-g.rk:40)}if(g.lg==='NCAAH')return 1;if(g.col){var b=(d===6&&g.lg==='NCAAF')?100:0;return g.rk<=20?b+100-g.rk:0}if(g.lg==='NFL'){var nb=(d===0||d===1||d===4)?120:0;return nb+60+g.wp*30}return 50+g.wp*10}
 function extGames(){var seen={};GAMES.forEach(function(g){seen[g.id]=1});gdAll().forEach(function(g){if(!seen[g.id]&&g.st!=='post'){seen[g.id]=1;GAMES.push(g)}})}
@@ -602,9 +603,9 @@ function sel(){if(!cur)return;
   if(cur.dataset.lg==='RANK'){showRank();return}
   if(cur.dataset.lg){gdlg=cur.dataset.lg;gdlgN=cur.textContent;gdf='all';gdp=0;loadTom();drawGd();show('gd');return}
   if(cur.dataset.grp){var g0=cur.dataset.grp;openG=openG===g0?'':g0;drawRail();refocus('#rail [data-grp="'+g0+'"]');return}
-  if(cur.dataset.fv){chv=cur.dataset.fv;grp='';SPT='';buildView();renderCh();show('ch');if(!VIEW.length)toast(chv==='fav'?'No favorites yet. Open a channel and press the star button.':'Nothing played yet');return}
-  if(cur.dataset.s){if(cur.dataset.s==='gd'){gdlg='';loadTom();drawGd()}if(cur.dataset.s==='ch'&&(SPT||chv)){SPT='';chv='';buildView();renderCh()}show(cur.dataset.s);return}
-  if(cur.dataset.t&&cur.classList.contains('ri')){if(!CH.length){toast('Add a playlist in Settings first');show('st');return}SPT=cur.dataset.t;grp='';chv='';buildView();renderCh();show('ch');if(!VIEW.length)toast('No '+SPT+' channels found in your playlist');return}
+  if(cur.dataset.fv){chv=cur.dataset.fv;grp='';SPT='';chq=[];buildView();renderCh();show('ch');if(!VIEW.length)toast(chv==='fav'?'No favorites yet. Open a channel and press the star button.':'Nothing played yet');return}
+  if(cur.dataset.s){if(cur.dataset.s==='gd'){gdlg='';loadTom();drawGd()}if(cur.dataset.s==='ch'&&(SPT||chv||chq.length)){SPT='';chv='';chq=[];buildView();renderCh()}show(cur.dataset.s);return}
+  if(cur.dataset.t&&cur.classList.contains('ri')){if(!CH.length){toast('Add a playlist in Settings first');show('st');return}SPT=cur.dataset.t;grp='';chv='';chq=[];buildView();renderCh();show('ch');if(!VIEW.length)toast('No '+SPT+' channels found in your playlist');return}
   var a=cur.dataset.act;
   if(a==='play'||a==='watch'||a==='sound'){playGame(GAMES[+cur.dataset.g]||GAMES[0])}
   else if(a==='sqgame')openSq(+cur.dataset.g||0);

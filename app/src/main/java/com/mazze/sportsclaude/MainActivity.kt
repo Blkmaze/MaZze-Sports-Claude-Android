@@ -279,8 +279,6 @@ class PlayerActivity : Activity() {
                     stalls++
                     if (stalls == 2) {
                         ts.setParameters(ts.buildUponParameters().setMaxVideoSize(1280, 720))
-                    } else if (stalls >= 4) {
-                        ts.setParameters(ts.buildUponParameters().setMaxVideoSize(854, 480))
                     }
                 }
             }

@@ -110,7 +110,7 @@
   #qrm{display:none;justify-content:center;margin-top:14px}.mo #qrm{display:flex}.mo .sqw,.mo .gp{display:none}
   .qrc{background:var(--panel);border:2px solid var(--line);border-radius:24px;padding:24px 30px;display:flex;flex-direction:column;align-items:center;gap:12px;min-width:720px}
   #qri{width:340px;height:340px;background:#fff;border-radius:14px;padding:12px;box-sizing:border-box}
-  #qrl,#qrs{font-size:20px;color:var(--mute);text-align:center;max-width:680px;word-break:break-all}
+  #qrl,#qrs{font-size:20px;color:var(--mute);text-align:center;max-width:680px}#qrl{word-break:break-all}.grid .ax.t{font-size:22px;color:var(--text)}.ax.sidel{font-size:24px!important;color:var(--text)!important}
   .gdr{display:flex;align-items:center;gap:18px;padding:0 22px;height:70px;border-radius:16px;background:var(--panel);border:2px solid var(--line);font-size:24px}
   .gdr span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gdr .tm2{width:200px;font-weight:800;color:var(--lime)}.gdr.live .tm2{color:var(--hot)}.gdr .lg2{width:120px;font-size:18px;color:var(--mute)}.gdr .mt{flex:1;font-weight:700}.gdr .rt{width:340px;font-size:19px;color:var(--mute);text-align:right}
   #gdl{display:flex;flex-direction:column;gap:8px;margin-top:6px}.gdp{font-size:18px;color:var(--mute);padding:0 10px}
@@ -456,6 +456,7 @@ function dayDiff(g){var d=new Date(g.dt),n=new Date();return Math.round((new Dat
 function dayLab(g){var d=new Date(g.dt),df=dayDiff(g);return (df===0?'Today':(df===1?'Tomorrow':d.toLocaleDateString([],{weekday:'short'})))+' '+d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}
 function drawGd(){
   var a=gdAll(),per=9,h='',f='';
+  if(gdf.indexOf('sp:')===0){var spn=gdf.slice(3);a=a.filter(function(g){var c=g.m.split(' - ')[0];return spn==='College'?(g.col||c.indexOf('College')===0):c===spn})}
   if(gdf==='live')a=a.filter(function(g){return g.st==='in'});
   if(gdf==='today')a=a.filter(function(g){return g.st==='in'||dayDiff(g)===0});
   if(gdf==='tom')a=a.filter(function(g){return g.st!=='in'&&dayDiff(g)===1});
@@ -463,7 +464,7 @@ function drawGd(){
   if(gdp>=pages)gdp=pages-1;if(gdp<0)gdp=0;
   GDL=a;
   a.slice(gdp*per,gdp*per+per).forEach(function(g,k){var ci=matchChannel(g);h+='<div class="gdr f'+(g.st==='in'?' live':'')+'" data-act="gdplay" data-k="'+(gdp*per+k)+'"><span class="tm2">'+(g.st==='in'?'LIVE '+lab(g):dayLab(g))+'</span><span class="lg2">'+(g.col&&g.rk<=25?'#'+g.rk+' ':'')+g.lg+'</span><span class="mt">'+g.t+'</span><span class="rt">'+(g.st==='in'?sc(g,'a')+'-'+sc(g,'h')+' &middot; ':'')+(ci>=0?CH[ci].n:'No channel found')+'</span></div>'});
-  [['all','All'],['live','Live now'],['today','Today'],['tom','Tomorrow']].forEach(function(x){f+='<div class="pill f'+(gdf===x[0]?' on':'')+'" data-act="gdf" data-v="'+x[0]+'">'+x[1]+'</div>'});
+  [['all','All'],['live','Live now'],['today','Today'],['tom','Tomorrow'],['sp:Football','Football'],['sp:Basketball','Basketball'],['sp:Soccer','Soccer'],['sp:Hockey','Hockey'],['sp:College','College']].forEach(function(x){f+='<div class="pill f'+(gdf===x[0]?' on':'')+'" data-act="gdf" data-v="'+x[0]+'">'+x[1]+'</div>'});
   f+='<div class="pill f" data-act="gdpg" data-d="-1">&#9664; Prev</div><span class="gdp">Page '+(gdp+1)+' of '+pages+' &middot; '+a.length+' games</span><div class="pill f" data-act="gdpg" data-d="1">Next &#9654;</div>';
   document.getElementById('gdf').innerHTML=f;
   document.getElementById('gdl').innerHTML=h||'<p style="font-size:24px;color:var(--mute)">Nothing scheduled here yet. Tomorrow games load a moment after you open the Guide.</p>';

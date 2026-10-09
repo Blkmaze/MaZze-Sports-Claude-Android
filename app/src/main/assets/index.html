@@ -293,7 +293,7 @@ function show(id){[].forEach.call(document.querySelectorAll('.screen'),function(
   var s=document.getElementById(id).querySelector('.f');focus(s)}
 function c(e){var r=e.getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2}}
 function move(d){var a=c(cur),best=null,bd=1e9;
-  list().forEach(function(e){if(e===cur)return;var p=c(e),dx=p.x-a.x,dy=p.y-a.y,ok,pr,sc;
+  list().forEach(function(e){if(e===cur)return;var p=c(e),dx,dy,ok,pr,sc;if((d==='right')&&cur.classList.contains('ri')&&!e.classList.contains('ri')){p={x:e.getBoundingClientRect().left+40,y:p.y}}dx=p.x-a.x;dy=p.y-a.y;
     if(d==='right'){ok=dx>8&&Math.abs(dy)<Math.abs(dx)*1.8;pr=dx;sc=Math.abs(dy)}
     if(d==='left'){ok=dx<-8&&Math.abs(dy)<Math.abs(dx)*1.8;pr=-dx;sc=Math.abs(dy)}
     if(d==='down'){ok=dy>8&&Math.abs(dx)<Math.abs(dy)*1.8;pr=dy;sc=Math.abs(dx)}

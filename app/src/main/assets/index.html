@@ -96,6 +96,24 @@
   .inp.focus{border-color:var(--hot)}
   .stat{font-size:22px;color:var(--lime);min-height:30px}
   #toast{position:fixed;left:50%;top:20px;transform:translateX(-50%);background:#3a1e0a;border:1px solid var(--hot);padding:10px 20px;border-radius:12px;font-size:15px;display:none;z-index:100}
+
+  #rail{gap:4px;padding:16px 14px;overflow:hidden}.brand{padding:2px 12px 10px;font-size:28px}.ri{padding:9px 14px;font-size:22px;gap:14px}.ri i{font-size:24px}.sep{padding:8px 16px 2px;font-size:15px}
+  .gp{flex-wrap:wrap}
+  .grid{grid-template-columns:44px repeat(11,64px)}
+  .ax.sidel{height:auto;writing-mode:vertical-rl;transform:rotate(180deg);font-size:20px;color:var(--mute);letter-spacing:1px;overflow:hidden}
+  .sq{font-size:19px;font-weight:700}
+  .sq.dn{background:#2f2f3a;color:var(--text);font-weight:800}.sq.pd{border-style:dashed;border-color:var(--hot);color:var(--hot);font-weight:800}.sq.me{background:var(--hot);color:#1b0b00;border-color:var(--hot);border-style:solid}
+  .sqp .big{padding:12px 16px;font-size:22px}.sqp .prow{flex-wrap:wrap}
+  .pot{font-size:21px;color:var(--mute);line-height:1.5;background:var(--panel2);border:2px solid var(--line);border-radius:16px;padding:12px 16px}.pot b{color:var(--lime)}
+  .pay2{display:flex;flex-wrap:wrap;gap:10px}.pay2 .big{flex:1 1 46%;text-align:center}.pay2 .big.sm{flex:1 1 28%;font-size:18px;padding:10px 8px}
+  .srow{display:flex;gap:12px;align-items:center}.srow .inp{width:170px;flex:none}
+  #qrm{display:none;justify-content:center;margin-top:14px}.mo #qrm{display:flex}.mo .sqw,.mo .gp{display:none}
+  .qrc{background:var(--panel);border:2px solid var(--line);border-radius:24px;padding:24px 30px;display:flex;flex-direction:column;align-items:center;gap:12px;min-width:720px}
+  #qri{width:340px;height:340px;background:#fff;border-radius:14px;padding:12px;box-sizing:border-box}
+  #qrl,#qrs{font-size:20px;color:var(--mute);text-align:center;max-width:680px;word-break:break-all}
+  .gdr{display:flex;align-items:center;gap:18px;padding:0 22px;height:70px;border-radius:16px;background:var(--panel);border:2px solid var(--line);font-size:24px}
+  .gdr span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gdr .tm2{width:200px;font-weight:800;color:var(--lime)}.gdr.live .tm2{color:var(--hot)}.gdr .lg2{width:120px;font-size:18px;color:var(--mute)}.gdr .mt{flex:1;font-weight:700}.gdr .rt{width:340px;font-size:19px;color:var(--mute);text-align:right}
+  #gdl{display:flex;flex-direction:column;gap:8px;margin-top:6px}.gdp{font-size:18px;color:var(--mute);padding:0 10px}
 </style>
 </head>
 <body>
@@ -103,6 +121,7 @@
   <div id="rail">
     <div class="brand">MaZze <b>Sports</b></div>
     <div class="ri f on" data-s="home"><i>&#127968;</i>Home</div>
+    <div class="ri f" data-s="gd"><i>&#128197;</i>Guide</div>
     <div class="ri f" data-s="mv"><i>&#9638;</i>Multiview</div>
     <div class="ri f" data-s="ch"><i>&#128250;</i>Channels</div>
     <div class="ri f" data-s="sq"><i>&#127922;</i>Squares</div>
@@ -142,26 +161,38 @@
         <div class="gc f" id="c4" data-act="watch" data-g="0"></div>
       </div>
     </section>
+    <section class="screen" id="gd">
+      <div class="top"><h2>Guide</h2><span>What is on now and what is coming up &middot; with your playlist channel</span></div>
+      <div class="gp" id="gdf"></div>
+      <div id="gdl"></div>
+    </section>
     <section class="screen" id="sq">
-      <div class="top"><h2>Squares</h2><span>Pick your squares for a live game &middot; pay on the secure ParlayPro site</span></div>
+      <div class="top"><h2>Squares</h2><span>Type the buyer's initials &middot; the app places their squares at random</span></div>
       <div class="gp" id="gp"></div>
       <div class="sqw">
         <div class="sqb"><div class="grid" id="grid"></div></div>
         <div class="sqp">
           <h3 id="sqt">-</h3>
-          <p>Numbers are drawn at random for each game. Refundable if the board does not fill.</p>
-          <p>Your initials (3 letters)</p><input class="inp f" id="in_ini" type="text" maxlength="4" placeholder="ABC"><p>Price per square</p>
+          <div class="gp" id="bt"></div>
+          <div class="srow"><input class="inp f" id="in_ini" type="text" maxlength="4" placeholder="Initials"><div class="prow" id="qt"></div></div>
           <div class="prow" id="pr"></div>
-          <p>Your squares: <b id="cnt">0</b></p>
+          <div class="pot" id="pot"></div>
           <div class="tot" id="tot">$0</div>
-          <div class="pay">
-            <div class="big f" data-act="pay" data-p="Cash App">Pay with Cash App</div>
-            <div class="big f" data-act="pay" data-p="PayPal">Pay with PayPal</div>
-            <div class="big f" data-act="pay" data-p="Card">Pay with Card</div>
-            <div class="big f" data-act="clear">Clear my picks</div>
+          <div class="pay2">
+            <div class="big f" data-act="pay" data-p="Cash App">Cash App QR</div>
+            <div class="big f" data-act="pay" data-p="PayPal">PayPal QR</div>
+            <div class="big f" data-act="pay" data-p="Zelle">Zelle</div>
+            <div class="big f" data-act="pay" data-p="Cash">Cash (paid)</div>
+          </div>
+          <div class="pay2">
+            <div class="big f sm" data-act="relpend">Release pending</div>
+            <div class="big f sm" data-act="relbuy">Remove buyer</div>
+            <div class="big f sm" data-act="resetb">Reset board</div>
           </div>
         </div>
       </div>
+      <div id="qrm"><div class="qrc"><h3 id="qrh"></h3><img id="qri" alt=""><p id="qrl"></p><p id="qrs"></p>
+        <div class="prow"><div class="big f" data-act="qrok">Payment received</div><div class="big f" data-act="qrno">Cancel &amp; release squares</div></div></div></div>
     </section>
     <section class="screen" id="mv">
       <div class="top"><h2>Multi-view</h2><span id="stamp">Live data from ESPN</span></div>
@@ -201,7 +232,14 @@
           <div class="big f" data-act="upd">Check for updates</div>
           <div class="big f" data-act="clearpl">Remove playlist</div>
           <p id="ustat"></p>
-          <p>Live scores come from ESPN. Squares payments open on parlaypro-squares.netlify.app.</p>
+          <p>Live scores come from ESPN.</p>
+        </div>
+        <div class="setc">
+          <h3>Squares payments</h3>
+          <p>Cash App tag</p><input class="inp f" id="in_cash" type="text" placeholder="$yourtag">
+          <p>PayPal.me name</p><input class="inp f" id="in_pp" type="text" placeholder="yourname">
+          <p>Zelle email or phone</p><input class="inp f" id="in_zel" type="text" placeholder="email or phone">
+          <p>These build the QR codes. Money goes straight to you; the app never handles payments.</p>
         </div>
       </div>
     </section>
@@ -323,19 +361,56 @@ function playChannelIdx(gi){
   if(A&&A.play)A.play(JSON.stringify(order),pos);else toast('Playing: '+CH[gi].n)}
 
 var GAMES=[{id:'x',t:'Loading...',a:'-',b:'-',an:'',bn:'',m:'Sports',as:'',hs:'',st:'pre',d:'',lg:''}];var spoil=sget('spoil','0')==='1';
-var PRICES=[5,10,20],price=10,gi=0,BD={};
+var PRICES=[5,10,20,25,50,100],price=+sget('bprice','10')||10,gi=0,qty=1,rst=0,LP=null,BD=(function(){try{return JSON.parse(sget('boards','{}'))||{}}catch(e){return {}}})();
 function shuf(sd){var a=[0,1,2,3,4,5,6,7,8,9],x=sd*9301+49297;for(var i=9;i>0;i--){x=(x*9301+49297)%233280;var j=Math.floor(x/233280*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
 function INI(){return (document.getElementById('in_ini').value||'').toUpperCase()}
-function bd(g){var id=g.id;if(!BD[id]){var tk={},sel={},n=0;for(var q=0;q<id.length;q++)n+=id.charCodeAt(q);for(var i=0;i<100;i++){if((i*7+n)%5<2)tk[i]=1}BD[id]={tk:tk,sel:sel,top:shuf(n),side:shuf(n+7)}}return BD[id]}
+function save(){sset('boards',JSON.stringify(BD))}
+function nb(p){return{p:p,c:{},top:shuf(Math.floor(Math.random()*1e6)),side:shuf(Math.floor(Math.random()*1e6))}}
+function SGm(){return GAMES[gi]||GAMES[0]}
+function bd(g){var id=g.id;if(!BD[id]||!BD[id].l||!BD[id].l.length)BD[id]={bi:0,l:[nb(price)]};return BD[id]}
+function cb(){var r=bd(SGm());if(r.bi>=r.l.length||r.bi<0)r.bi=0;return r.l[r.bi]}
+function cnt(b){var n=0,k;for(k in b.c)n++;return n}
 function drawSq(){
-  var g=GAMES[gi]||GAMES[0],b=bd(g),h='<div class="ax t"></div><div class="ax t" style="grid-column:span 10">'+g.a+' (top)  /  '+g.b+' (side)</div>';
-  h+='<div class="ax"></div>';for(var c2=0;c2<10;c2++)h+='<div class="ax">'+b.top[c2]+'</div>';
-  for(var r=0;r<10;r++){h+='<div class="ax">'+b.side[r]+'</div>';for(var c3=0;c3<10;c3++){var i=r*10+c3,k=b.tk[i]?'tk':(b.sel[i]?'me':'');h+='<div class="sq f '+k+'" data-act="cell" data-i="'+i+'">'+(b.tk[i]?'X':(b.sel[i]?INI().slice(0,4):''))+'</div>'}}
+  var g=SGm(),r=bd(g),b=cb(),h='',i,r2,c2,ini=INI(),P=b.p,sold=cnt(b);
+  h+='<div class="ax t" style="grid-column:3/span 10;grid-row:1">'+(g.an||g.a)+' (top) &darr;</div>';
+  h+='<div class="ax sidel" style="grid-column:1;grid-row:3/span 10">'+(g.bn||g.b)+' (side)</div>';
+  h+='<div></div><div></div><div></div><div></div>';
+  for(c2=0;c2<10;c2++)h+='<div class="ax">'+b.top[c2]+'</div>';
+  for(r2=0;r2<10;r2++){h+='<div class="ax">'+b.side[r2]+'</div>';for(c2=0;c2<10;c2++){i=r2*10+c2;var o=b.c[i],k=o?(o.s==='d'?'dn':'pd'):'';if(o&&ini&&o.i===ini)k+=' me';h+='<div class="sq f '+k+'" data-act="cell" data-i="'+i+'">'+(o?o.i:'')+'</div>'}}
   document.getElementById('grid').innerHTML=h;
   document.getElementById('sqt').textContent=g.t;
-  var n=Object.keys(b.sel).length;document.getElementById('cnt').textContent=n;document.getElementById('tot').textContent='$'+(n*price);
-  document.getElementById('gp').innerHTML=GAMES.map(function(x,j){return '<div class="pill f'+(j===gi?' on':'')+'" data-act="game" data-g="'+j+'">'+x.a+'@'+x.b+'</div>'}).join('');
-  document.getElementById('pr').innerHTML=PRICES.map(function(p){return '<div class="big f'+(p===price?' on':'')+'" data-act="price" data-p="'+p+'">$'+p+'</div>'}).join('')}
+  var bt='';r.l.forEach(function(x,j){bt+='<div class="pill f'+(j===r.bi?' on':'')+'" data-act="btab" data-j="'+j+'">Board #'+(j+1)+(cnt(x)>=100?' (FULL)':'')+' &middot; $'+x.p+'</div>'});
+  bt+='<div class="pill f" data-act="bnew">+ New board</div>';
+  document.getElementById('bt').innerHTML=bt;
+  document.getElementById('qt').innerHTML=[1,2,5,10,20].map(function(q){return '<div class="big f'+(q===qty?' on':'')+'" data-act="qty" data-q="'+q+'">'+q+'</div>'}).join('');
+  document.getElementById('pr').innerHTML=PRICES.map(function(p){return '<div class="big f'+(p===P?' on':'')+'" data-act="price" data-p="'+p+'">$'+p+'</div>'}).join('');
+  document.getElementById('pot').innerHTML='Sold <b>'+sold+'/100</b> &middot; pot so far <b>$'+(sold*P)+'</b> of $'+(100*P)+'<br>Payouts: Q1 <b>$'+(P*20)+'</b> &middot; Q2 <b>$'+(P*20)+'</b> &middot; Q3 <b>$'+(P*20)+'</b> &middot; Final <b>$'+(P*40)+'</b>';
+  document.getElementById('tot').textContent='Buyer pays $'+(qty*P)+' for '+qty+' square'+(qty>1?'s':'');
+  document.getElementById('gp').innerHTML=GAMES.map(function(x,j){return '<div class="pill f'+(j===gi?' on':'')+'" data-act="game" data-g="'+j+'">'+x.a+'@'+x.b+'</div>'}).join('')}
+function takePay(m){
+  var b=cb(),ini=INI(),n=qty,i,open=[],pick=[],z=sget('zelle','');
+  if(ini.length<3){toast('Type the buyer initials first (3 letters)');refocus('#in_ini');return}
+  if(m==='Zelle'&&!z){toast('Add your Zelle email or phone in Settings first');return}
+  for(i=0;i<100;i++)if(!b.c[i])open.push(i);
+  if(open.length<n){toast(open.length?'Only '+open.length+' squares left on this board. Pick fewer or start a new board':'This board is full. Press + New board');return}
+  while(pick.length<n){pick.push(open.splice(Math.floor(Math.random()*open.length),1)[0])}
+  pick.forEach(function(x){b.c[x]={i:ini,s:m==='Cash'?'d':'p',m:m}});
+  save();
+  if(m==='Cash'){drawSq();toast(ini+' got '+n+' square'+(n>1?'s':'')+' - cash received');refocus('[data-act="pay"][data-p="Cash"]');return}
+  LP={b:b,i:pick,n:ini+' x'+n};
+  var amt=n*b.p,url='',tag=sget('cashtag','$7707438091'),pp=sget('ppme','williemayes');
+  var q=pp.indexOf('paypal.me/');if(q>=0)pp=pp.slice(q+10);while(pp.charAt(pp.length-1)==='/')pp=pp.slice(0,-1);
+  if(tag.charAt(0)!=='$')tag='$'+tag;
+  if(m==='Cash App')url='https://cash.app/'+tag+'/'+amt;
+  if(m==='PayPal')url='https://paypal.me/'+pp+'/'+amt;
+  var im=document.getElementById('qri');
+  document.getElementById('qrh').textContent=m==='Zelle'?'Pay $'+amt+' with Zelle':'Scan to pay $'+amt+' with '+m;
+  if(url){im.style.display='block';im.src='https://api.qrserver.com/v1/create-qr-code/?size=340x340&margin=0&data='+encodeURIComponent(url);document.getElementById('qrl').textContent=url}
+  else{im.style.display='none';im.removeAttribute('src');document.getElementById('qrl').textContent='Send $'+amt+' by Zelle to '+z}
+  document.getElementById('qrs').textContent=ini+' - '+n+' square'+(n>1?'s':'')+' placed at random. They stay pending until you press Payment received.';
+  drawSq();
+  document.getElementById('sq').classList.add('mo');refocus('#qrm .big')}
+function closeQr(){LP=null;document.getElementById('sq').classList.remove('mo');drawSq();refocus('#in_ini')}
 function refocus(sel){var e=document.querySelector(sel);if(e)focus(e)}
 function openSq(g){gi=g;drawSq();show('sq')}
 var LG=[['football/nfl','Football','NFL'],['basketball/nba','Basketball','NBA'],['hockey/nhl','Hockey','NHL'],['soccer/usa.1','Soccer','MLS'],['baseball/mlb','Baseball','MLB'],['football/college-football','College','NCAAF'],['basketball/mens-college-basketball','College Hoops','NCAAB'],['soccer/eng.1','Soccer','EPL'],['soccer/esp.1','Soccer','La Liga'],['soccer/ger.1','Soccer','Bundesliga'],['soccer/ita.1','Soccer','Serie A'],['soccer/fra.1','Soccer','Ligue 1'],['soccer/uefa.champions','Soccer','UCL'],['soccer/uefa.europa','Soccer','UEL'],['soccer/mex.1','Soccer','Liga MX'],['soccer/usa.nwsl','Soccer','NWSL'],['soccer/aus.1','Soccer','A-League'],['soccer/jpn.1','Soccer','J1'],['basketball/wnba','Basketball','WNBA'],['football/cfl','Football','CFL'],['hockey/mens-college-hockey','Hockey','NCAAH']];
@@ -356,7 +431,7 @@ function loadGames(){
     res.forEach(function(x){all=all.concat(x||[])});
     var rank={in:0,pre:1,post:2};
     all=all.filter(function(g){return !(g.col&&g.rk>20)});all.sort(function(x,y){if(rank[x.st]!==rank[y.st])return rank[x.st]-rank[y.st];if(x.st!=='post'&&pri(x)!==pri(y))return pri(y)-pri(x);return x.st==='post'?(y.dt>x.dt?1:-1):(x.dt>y.dt?1:-1)});
-    GAMES=all.slice(0,10);
+    GAMES=all.slice(0,10);ALLG=all.filter(function(g){return g.st!=='post'});loadTom();
     if(!GAMES.length)GAMES=[{id:'x',t:'No games',a:'-',b:'-',an:'',bn:'',m:'Sports',as:'',hs:'',st:'pre',d:'',lg:''}];
     if(gi>=GAMES.length)gi=0;
     render();
@@ -371,6 +446,30 @@ function loadGames(){
       NEXT[li]=Date.now()+(live?15000:90000);
       res[li]=r;left--;if(left===0)done()})});
 }
+var ALLG=[],TOM={},TNEXT=0,gdp=0,gdf='all',GDL=[];
+function loadTom(){var now=Date.now();if(TNEXT>now)return;TNEXT=now+600000;var d=new Date(now+86400000),ds=d.getFullYear()+('0'+(d.getMonth()+1)).slice(-2)+('0'+d.getDate()).slice(-2);
+  LG.forEach(function(l,li){http('https://site.api.espn.com/apis/site/v2/sports/'+l[0]+'/scoreboard?dates='+ds+(l[0]==='football/college-football'?'&groups=80&limit=200':(l[0]==='basketball/mens-college-basketball'?'&groups=50&limit=200':'')),function(err,t){
+    if(err)return;try{TOM[li]=(JSON.parse(t).events||[]).map(function(e){return norm(l,e)}).filter(Boolean)}catch(x){return}
+    if(document.getElementById('gd').classList.contains('on')&&cur&&!document.getElementById('gdl').contains(cur))drawGd()})})}
+function gdAll(){var a=ALLG.slice(),seen={},k;for(k in TOM)(TOM[k]||[]).forEach(function(g){if(g.st==='pre'&&!(g.col&&g.rk>20))a.push(g)});a=a.filter(function(g){if(seen[g.id])return false;seen[g.id]=1;return true});a.sort(function(x,y){if(x.st!==y.st&&(x.st==='in'||y.st==='in'))return x.st==='in'?-1:1;return x.dt>y.dt?1:(x.dt<y.dt?-1:0)});return a}
+function dayDiff(g){var d=new Date(g.dt),n=new Date();return Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(n.getFullYear(),n.getMonth(),n.getDate()))/86400000)}
+function dayLab(g){var d=new Date(g.dt),df=dayDiff(g);return (df===0?'Today':(df===1?'Tomorrow':d.toLocaleDateString([],{weekday:'short'})))+' '+d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}
+function drawGd(){
+  var a=gdAll(),per=9,h='',f='';
+  if(gdf==='live')a=a.filter(function(g){return g.st==='in'});
+  if(gdf==='today')a=a.filter(function(g){return g.st==='in'||dayDiff(g)===0});
+  if(gdf==='tom')a=a.filter(function(g){return g.st!=='in'&&dayDiff(g)===1});
+  var pages=Math.max(1,Math.ceil(a.length/per));
+  if(gdp>=pages)gdp=pages-1;if(gdp<0)gdp=0;
+  GDL=a;
+  a.slice(gdp*per,gdp*per+per).forEach(function(g,k){var ci=matchChannel(g);h+='<div class="gdr f'+(g.st==='in'?' live':'')+'" data-act="gdplay" data-k="'+(gdp*per+k)+'"><span class="tm2">'+(g.st==='in'?'LIVE '+lab(g):dayLab(g))+'</span><span class="lg2">'+(g.col&&g.rk<=25?'#'+g.rk+' ':'')+g.lg+'</span><span class="mt">'+g.t+'</span><span class="rt">'+(g.st==='in'?sc(g,'a')+'-'+sc(g,'h')+' &middot; ':'')+(ci>=0?CH[ci].n:'No channel found')+'</span></div>'});
+  [['all','All'],['live','Live now'],['today','Today'],['tom','Tomorrow']].forEach(function(x){f+='<div class="pill f'+(gdf===x[0]?' on':'')+'" data-act="gdf" data-v="'+x[0]+'">'+x[1]+'</div>'});
+  f+='<div class="pill f" data-act="gdpg" data-d="-1">&#9664; Prev</div><span class="gdp">Page '+(gdp+1)+' of '+pages+' &middot; '+a.length+' games</span><div class="pill f" data-act="gdpg" data-d="1">Next &#9654;</div>';
+  document.getElementById('gdf').innerHTML=f;
+  document.getElementById('gdl').innerHTML=h||'<p style="font-size:24px;color:var(--mute)">Nothing scheduled here yet. Tomorrow games load a moment after you open the Guide.</p>';
+  if(cur&&!document.body.contains(cur)){var f1=document.querySelector('#gd .f');if(f1)focus(f1)}}
+function initPay(){[['in_cash','cashtag','$7707438091'],['in_pp','ppme','williemayes'],['in_zel','zelle','']].forEach(function(x){var e=document.getElementById(x[0]);e.value=sget(x[1],x[2]);e.addEventListener('input',function(){sset(x[1],e.value.trim())})})}
+initPay();
 function matchChannel(g){
   if(!CH.length)return -1;
   var an=g.an.toLowerCase(),bn=g.bn.toLowerCase(),aa=g.a.toLowerCase(),ba=g.b.toLowerCase(),lg=g.lg.toLowerCase(),i,k;
@@ -418,18 +517,26 @@ function autoCheck(){
     if(n>mine){toast('Update available: build '+n+'. Open Settings, then Check for updates.');document.getElementById('ustat').textContent='Update available: build '+n}})}
 function sel(){if(!cur)return;
   if(cur.tagName==='INPUT'){cur.focus();return}
-  if(cur.dataset.s){if(cur.dataset.s==='ch'&&SPT){SPT='';buildView();renderCh()}show(cur.dataset.s);return}
+  if(cur.dataset.s){if(cur.dataset.s==='gd'){loadTom();drawGd()}if(cur.dataset.s==='ch'&&SPT){SPT='';buildView();renderCh()}show(cur.dataset.s);return}
   if(cur.dataset.t&&cur.classList.contains('ri')){if(!CH.length){toast('Add a playlist in Settings first');show('st');return}SPT=cur.dataset.t;grp='';buildView();renderCh();show('ch');if(!VIEW.length)toast('No '+SPT+' channels found in your playlist');return}
   var a=cur.dataset.act;
   if(a==='play'||a==='watch'||a==='sound'){playGame(GAMES[+cur.dataset.g]||GAMES[0])}
   else if(a==='sqgame')openSq(+cur.dataset.g||0);
   else if(a==='game'){gi=+cur.dataset.g;drawSq();refocus('#gp .pill:nth-child('+(gi+1)+')')}
-  else if(a==='price'){price=+cur.dataset.p;var k=[].indexOf.call(cur.parentNode.children,cur);drawSq();refocus('#pr .big:nth-child('+(k+1)+')')}
-  else if(a==='cell'){var i=+cur.dataset.i,b=bd(GAMES[gi]);if(b.tk[i]){toast('That square is taken')}else if(INI().length<3){toast('Enter your initials first (3 letters)');refocus('#in_ini')}else{if(b.sel[i])delete b.sel[i];else b.sel[i]=1;drawSq();refocus('.sq[data-i="'+i+'"]')}}
-  else if(a==='clear'){bd(GAMES[gi]).sel={};drawSq();refocus('[data-act=clear]')}
-  else if(a==='pay'){var n=Object.keys(bd(GAMES[gi]).sel).length;
-    if(!n){toast('Pick at least one square first')}else if(INI().length<3){toast('Enter your initials first (3 letters)');refocus('#in_ini')}
-    else{toast('Opening '+cur.dataset.p+' checkout for $'+(n*price)+' on parlaypro-squares.netlify.app');if(A&&A.openUrl)A.openUrl('https://parlaypro-squares.netlify.app/')}}
+  else if(a==='btab'){var rr=bd(SGm());rr.bi=+cur.dataset.j;save();drawSq();refocus('#bt .pill:nth-child('+(rr.bi+1)+')')}
+  else if(a==='bnew'){var r3=bd(SGm());r3.l.push(nb(price));r3.bi=r3.l.length-1;save();drawSq();toast('Board #'+(r3.bi+1)+' started at $'+price);refocus('#bt .pill:last-child')}
+  else if(a==='qty'){qty=+cur.dataset.q;drawSq();refocus('#qt .big[data-q="'+qty+'"]')}
+  else if(a==='price'){var np=+cur.dataset.p,bb=cb();if(cnt(bb)&&np!==bb.p){toast('This board already has sales at $'+bb.p+'. Press + New board to start one at $'+np);price=np}else{bb.p=np;price=np;sset('bprice',''+np);save()}drawSq();refocus('#pr .big[data-p="'+np+'"]')}
+  else if(a==='cell'){var o2=cb().c[+cur.dataset.i];if(o2){o2.s=o2.s==='d'?'p':'d';save();toast(o2.i+' - '+(o2.s==='d'?'PAID':'PENDING')+' ('+o2.m+')');var ci2=cur.dataset.i;drawSq();refocus('.sq[data-i="'+ci2+'"]')}else toast('Open square. Squares are placed at random when you take a payment.')}
+  else if(a==='pay')takePay(cur.dataset.p);
+  else if(a==='qrok'){if(LP){var b5=LP.b;LP.i.forEach(function(x){if(b5.c[x])b5.c[x].s='d'});save();toast(LP.n+' paid - squares locked in')}closeQr()}
+  else if(a==='qrno'){if(LP){var b6=LP.b;LP.i.forEach(function(x){delete b6.c[x]});save();toast('Squares released')}closeQr()}
+  else if(a==='relpend'){var b7=cb(),n7=0,k7;for(k7 in b7.c)if(b7.c[k7].s==='p'){delete b7.c[k7];n7++}save();drawSq();toast(n7+' pending squares released');refocus('[data-act="relpend"]')}
+  else if(a==='relbuy'){var b8=cb(),n8=0,k8,ii=INI();if(ii.length<3){toast('Type the buyer initials first');refocus('#in_ini')}else{for(k8 in b8.c)if(b8.c[k8].i===ii){delete b8.c[k8];n8++}save();drawSq();toast(n8+' squares removed for '+ii);refocus('[data-act="relbuy"]')}}
+  else if(a==='resetb'){if(!rst){rst=1;toast('Press Reset board again to wipe every square on this board');setTimeout(function(){rst=0},4000)}else{rst=0;var b9=cb();b9.c={};b9.top=shuf(Math.floor(Math.random()*1e6));b9.side=shuf(Math.floor(Math.random()*1e6));save();drawSq();toast('Board reset - new numbers drawn');refocus('[data-act="resetb"]')}}
+  else if(a==='gdf'){gdf=cur.dataset.v;gdp=0;drawGd();refocus('#gdf .pill[data-v="'+gdf+'"]')}
+  else if(a==='gdpg'){var dd=cur.dataset.d;gdp+=+dd;drawGd();refocus('#gdf .pill[data-d="'+dd+'"]')}
+  else if(a==='gdplay'){var gg=GDL[+cur.dataset.k];if(gg)playGame(gg)}
   else if(a==='toggle'){spoil=!spoil;sset('spoil',spoil?'1':'0');render();toast('Spoiler-free '+(spoil?'ON':'OFF'))}
   else if(a==='chplay'){var gi2=VIEW[winStart()+(+cur.dataset.r)];if(gi2!==undefined)playChannelIdx(gi2)}
   else if(a==='chmode'){if(SPT){SPT=''}else{showAll=!showAll;sset('showall',showAll?'1':'0')}buildView();renderCh()}
@@ -442,6 +549,7 @@ function sel(){if(!cur)return;
 window.__back=function(){
   var ae=document.activeElement;
   if(ae&&ae.tagName==='INPUT'){ae.blur();return true}
+  if(document.getElementById('sq').classList.contains('mo')){closeQr();return true}
   if(!document.querySelector('#home').classList.contains('on')){show('home');return true}
   return false};
 addEventListener('keydown',function(e){var k=e.key,ae=document.activeElement;

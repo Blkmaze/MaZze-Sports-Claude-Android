@@ -560,7 +560,7 @@ function matchChannel(g){
   for(i=0;i<pool.length;i++){k=CH[pool[i]].k;if(lg&&k.indexOf(lg)>=0)return pool[i]}
   return -1}
 var GSEL=null;
-function hl(g){if(!g){toast('Pick a game first');return}var q=encodeURIComponent(g.a+' vs '+g.b+' highlights');var u='https://www.youtube.com/results?search_query='+q;if(A&&A.openUrl){toast('Opening YouTube highlights for '+g.a+' / '+g.b);A.openUrl(u)}else{window.open(u)}}
+function hl(g){if(!g){toast('Pick a game first');return}var su='https://www.youtube.com/results?search_query='+encodeURIComponent(g.a+' vs '+g.b+' highlights');toast('Finding highlights for '+g.a+' / '+g.b+'...');var done=0;var go=function(u){if(done)return;done=1;if(A&&A.openUrl)A.openUrl(u);else window.open(u)};setTimeout(function(){go(su)},15000);http(su+'&sp=EgIQAQ%253D%253D',function(err,t){var id='';if(!err&&t){var re=/"videoRenderer":\{"videoId":"([\w-]{11})"[\s\S]*?"title":\{"runs":\[\{"text":"([^"]*)"/g,m,f='',h='';while((m=re.exec(t))){if(!f&&!/live/i.test(m[2]))f=m[1];if(/highlight/i.test(m[2])&&!/live/i.test(m[2])){h=m[1];break}}id=h||f}go(id?'https://www.youtube.com/watch?v='+id:su)})}
 function playGame(g){
   var ci=matchChannel(g);
   if(ci<0){if(!CH.length){toast('Add a playlist in Settings first');show('st');return}GSEL=g;chq=[g.an,g.bn,g.lg].map(function(x){return (x||'').toLowerCase()}).filter(function(x){return x.length>2});SPT='';chv='';grp='';buildView();renderCh();show('ch');toast(VIEW.length?'No exact channel found for '+g.a+' / '+g.b+' ('+(g.st==='in'?'LIVE':dayLab(g))+'). Press OK on one.':'No channels found for '+g.a+' / '+g.b+'. Try the Guide or Channels.');return}

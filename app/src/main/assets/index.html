@@ -114,6 +114,8 @@
   .gdr{display:flex;align-items:center;gap:18px;padding:0 22px;height:70px;border-radius:16px;background:var(--panel);border:2px solid var(--line);font-size:24px}
   .gdr span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gdr .tm2{width:200px;font-weight:800;color:var(--lime)}.gdr.live .tm2{color:var(--hot)}.gdr .lg2{width:120px;font-size:18px;color:var(--mute)}.gdr .mt{flex:1;font-weight:700}.gdr .rt{width:340px;font-size:19px;color:var(--mute);text-align:right}
   #gdl{display:flex;flex-direction:column;gap:8px;margin-top:6px}.gdp{font-size:18px;color:var(--mute);padding:0 10px}
+  .nm{right:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:22px}
+  .cp p{font-size:20px}
 </style>
 </head>
 <body>
@@ -210,7 +212,7 @@
         <div class="cl" id="chl"></div>
         <div class="cp">
           <h3 id="chn">No channel</h3><p id="chg">-</p>
-          <p>Press OK on a channel to watch it full screen. Up/Down changes channel while watching.</p>
+          <p>OK to watch. Up/Down changes channel.</p>
           <div class="azr f" id="azs" data-act="az"></div>
         </div>
       </div>
@@ -498,7 +500,7 @@ function playGame(g){
   var ci=matchChannel(g);
   if(ci<0){toast(CH.length?'No channel matched this game - pick one in Channels':'Add a playlist in Settings first');show(CH.length?'ch':'st');return}
   playChannelIdx(ci)}
-function pri(g){var d=new Date().getDay();if(g.col){var b=(d===6&&g.lg==='NCAAF')?100:0;return g.rk<=20?b+100-g.rk:0}if(g.lg==='NFL'){var nb=(d===0||d===1||d===4)?120:0;return nb+60+g.wp*30}return 50+g.wp*10}
+function pri(g){var d=new Date().getDay();if(g.lg==='NCAAH')return 1;if(g.col){var b=(d===6&&g.lg==='NCAAF')?100:0;return g.rk<=20?b+100-g.rk:0}if(g.lg==='NFL'){var nb=(d===0||d===1||d===4)?120:0;return nb+60+g.wp*30}return 50+g.wp*10}
 function homeList(G){var L=G.filter(function(g){return g.st==='in'});if(L.length)return L;var S=G.filter(function(g){return g.st==='pre'&&g.dt&&(new Date(g.dt).getTime()-Date.now())<10800000});return S.length?S:G.slice(0,1)}
 function render(){var G=GAMES,live=G.filter(function(g){return g.st==='in'}).length,HG=homeList(G),h=HG[0];
   document.getElementById('hdr').textContent=live+' live now · '+G.length+' games shown'+(okNet?'':' · offline, showing last data');

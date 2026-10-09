@@ -241,10 +241,12 @@ class PlayerActivity : Activity() {
     override fun onStart() {
         super.onStart()
         startPlayer()
+        registerNet()
     }
 
     override fun onStop() {
         super.onStop()
+        unregisterNet()
         h.removeCallbacksAndMessages(null)
         player?.release()
         player = null
@@ -295,6 +297,46 @@ class PlayerActivity : Activity() {
         view.player = p
         player = p
         playCurrent()
+    }
+
+    private var cm: android.net.ConnectivityManager? = null
+    private var netCb: android.net.ConnectivityManager.NetworkCallback? = null
+    private var lost = false
+
+    private fun registerNet() {
+        try {
+            val c = getSystemService(CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+            val cb = object : android.net.ConnectivityManager.NetworkCallback() {
+                override fun onLost(n: android.net.Network) {
+                    lost = true
+                }
+                override fun onAvailable(n: android.net.Network) {
+                    if (lost) {
+                        lost = false
+                        h.post {
+                            val pl = player
+                            if (pl != null) {
+                                pl.prepare()
+                                pl.playWhenReady = true
+                            }
+                        }
+                    }
+                }
+            }
+            c.registerDefaultNetworkCallback(cb)
+            cm = c
+            netCb = cb
+        } catch (t: Throwable) {
+        }
+    }
+
+    private fun unregisterNet() {
+        try {
+            val cb = netCb
+            if (cb != null) cm?.unregisterNetworkCallback(cb)
+        } catch (t: Throwable) {
+        }
+        netCb = null
     }
 
     private fun playCurrent() {

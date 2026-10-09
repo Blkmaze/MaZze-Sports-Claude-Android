@@ -238,7 +238,7 @@ function http(url,cb){
   if(A&&A.httpGet){var id=++cid;cbs[id]=cb;A.httpGet(id,url)}
   else fetch(url).then(function(r){return r.text()}).then(function(t){cb(null,t)}).catch(function(e){cb(String(e),'')})}
 
-var CH=[],VIEW=[],SPORTS=null,chPos=0,showAll=sget('showall','1')==='1',grp='',groups=[],plMode=sget('plmode','m3u');
+var CH=[],VIEW=[],SPORTS=null,chPos=0,showAll=sget('showall','0')==='1',grp='',groups=[],plMode=sget('plmode','m3u');
 var SP_RE=/sport|espn|fox sports|\bfs1\b|\bfs2\b|nfl|nba|nhl|mlb|mls|nbc sports|cbs sports|bein|sky sports|tnt|dazn|fight|ufc|boxing|wwe|golf|tennis|racing|f1|nascar|soccer|football|basketball|hockey|baseball|premier|laliga|bundesliga|big ten|btn|sec network|acc network|bally|msg|nesn|yes network/i;
 function parseM3U(t){var L=t.split(/\r?\n/),out=[],i;
   for(i=0;i<L.length;i++){var l=L[i];

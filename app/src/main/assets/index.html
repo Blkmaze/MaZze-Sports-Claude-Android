@@ -126,6 +126,8 @@
   #tk{display:inline-block;white-space:nowrap;font-size:20px;color:var(--text);animation:tkm 90s linear infinite;padding-left:20px}
   #tk b{color:var(--lime);font-weight:800}#tk i{font-style:normal;color:var(--hot);padding:0 18px}
   @keyframes tkm{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .prev{height:430px}.tm{height:62px;font-size:21px}.side{gap:10px}.strip{margin-top:12px}
+  .rh{font-size:20px;color:var(--mute);letter-spacing:2px;font-weight:700;margin:14px 6px 0}
 </style>
 </head>
 <body>
@@ -170,6 +172,12 @@
         <div class="gc f" id="c3" data-act="watch" data-g="0"></div>
         <div class="gc f" id="c4" data-act="watch" data-g="0"></div>
       </div>
+      <div class="rh">COMING UP &middot; TOP GAMES</div>
+      <div class="strip"><div class="gc f" id="c5" data-act="watch" data-g="0"></div>
+        <div class="gc f" id="c6" data-act="watch" data-g="0"></div>
+        <div class="gc f" id="c7" data-act="watch" data-g="0"></div>
+        <div class="gc f" id="c8" data-act="watch" data-g="0"></div>
+        <div class="gc f" id="c9" data-act="watch" data-g="0"></div></div>
     </section>
     <section class="screen" id="gd">
       <div class="top"><h2 id="gdt">Guide</h2><span>What is on now and what is coming up &middot; with your playlist channel</span></div>
@@ -415,7 +423,7 @@ function drawSq(){
   document.getElementById('pr').innerHTML=PRICES.map(function(p){return '<div class="big f'+(p===P?' on':'')+'" data-act="price" data-p="'+p+'">$'+p+'</div>'}).join('');
   document.getElementById('pot').innerHTML='Sold <b>'+sold+'/100</b> &middot; pot so far <b>$'+(sold*P)+'</b> of $'+(100*P)+'<br>Payouts: Q1 <b>$'+(P*20)+'</b> &middot; Q2 <b>$'+(P*20)+'</b> &middot; Q3 <b>$'+(P*20)+'</b> &middot; Final <b>$'+(P*40)+'</b>';
   document.getElementById('tot').textContent='Buyer pays $'+(qty*P)+' for '+qty+' square'+(qty>1?'s':'');
-  document.getElementById('gp').innerHTML=GAMES.map(function(x,j){return '<div class="pill f'+(j===gi?' on':'')+'" data-act="game" data-g="'+j+'">'+x.a+'@'+x.b+'</div>'}).join('')}
+  document.getElementById('gp').innerHTML=GAMES.slice(0,10).map(function(x,j){return '<div class="pill f'+(j===gi?' on':'')+'" data-act="game" data-g="'+j+'">'+x.a+'@'+x.b+'</div>'}).join('')}
 function takePay(m){
   var b=cb(),ini=INI(),n=qty,i,open=[],pick=[],z=sget('zelle','');
   if(ini.length<3){toast('Type the buyer initials first (3 letters)');refocus('#in_ini');return}
@@ -479,7 +487,7 @@ var ALLG=[],TOM={},TNEXT=0,gdp=0,gdf='all',gdlg='',gdlgN='',GDL=[];
 function loadTom(){var now=Date.now();if(TNEXT>now)return;TNEXT=now+600000;var d=new Date(now+86400000),d7=new Date(now+7*86400000),fm=function(x){return x.getFullYear()+('0'+(x.getMonth()+1)).slice(-2)+('0'+x.getDate()).slice(-2)},ds=fm(d),de=fm(d7);
   LG.forEach(function(l,li){http('https://site.api.espn.com/apis/site/v2/sports/'+l[0]+'/scoreboard?dates='+ds+((l[0]==='football/nfl'||l[0]==='football/college-football')?'-'+de:'')+(l[0]==='football/college-football'?'&groups=80&limit=200':(l[0]==='basketball/mens-college-basketball'?'&groups=50&limit=200':'')),function(err,t){
     if(err)return;try{TOM[li]=(JSON.parse(t).events||[]).map(function(e){return norm(l,e)}).filter(Boolean)}catch(x){return}
-    if(document.getElementById('gd').classList.contains('on')&&cur&&!document.getElementById('gdl').contains(cur))drawGd()})})}
+    if(document.getElementById('gd').classList.contains('on')&&cur&&!document.getElementById('gdl').contains(cur))drawGd();render();tickBuild()})})}
 function gdAll(){var a=ALLG.slice(),seen={},k;for(k in TOM)(TOM[k]||[]).forEach(function(g){if(g.st==='pre'&&!(g.col&&g.rk>20))a.push(g)});a=a.filter(function(g){if(seen[g.id])return false;seen[g.id]=1;return true});a.sort(function(x,y){if(x.st!==y.st&&(x.st==='in'||y.st==='in'))return x.st==='in'?-1:1;return x.dt>y.dt?1:(x.dt<y.dt?-1:0)});return a}
 function dayDiff(g){var d=new Date(g.dt),n=new Date();return Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(n.getFullYear(),n.getMonth(),n.getDate()))/86400000)}
 function dayLab(g){var d=new Date(g.dt),df=dayDiff(g);return (df===0?'Today':(df===1?'Tomorrow':d.toLocaleDateString([],{weekday:'short'})))+' '+d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}
@@ -530,16 +538,19 @@ function playGame(g){
   if(ci<0){toast(CH.length?'No channel matched this game - pick one in Channels':'Add a playlist in Settings first');show(CH.length?'ch':'st');return}
   playChannelIdx(ci)}
 function pri(g){var d=new Date().getDay();if(isMy(g))return 200;if(g.lg==='NCAAH')return 1;if(g.col){var b=(d===6&&g.lg==='NCAAF')?100:0;return g.rk<=20?b+100-g.rk:0}if(g.lg==='NFL'){var nb=(d===0||d===1||d===4)?120:0;return nb+60+g.wp*30}return 50+g.wp*10}
-function homeList(G){var L=G.filter(function(g){return g.st==='in'});if(L.length)return L;var S=G.filter(function(g){return g.st==='pre'&&g.dt&&(new Date(g.dt).getTime()-Date.now())<10800000});return S.length?S:G.slice(0,1)}
-function render(){var G=GAMES,live=G.filter(function(g){return g.st==='in'}).length,HG=homeList(G),h=HG[0];
+function extGames(){var seen={};GAMES.forEach(function(g){seen[g.id]=1});gdAll().forEach(function(g){if(!seen[g.id]&&g.st!=='post'){seen[g.id]=1;GAMES.push(g)}})}
+function homeList(G){var L=G.filter(function(g){return g.st==='in'}).sort(function(x,y){return pri(y)-pri(x)});
+  var P=G.filter(function(g){var t=new Date(g.dt).getTime()-Date.now();return g.st==='pre'&&t>-3600000&&t<129600000&&g.lg!=='NCAAH'}).sort(function(x,y){var ax=dayDiff(x)<=0?0:1,ay=dayDiff(y)<=0?0:1;if(ax!==ay)return ax-ay;return pri(y)-pri(x)||(x.dt>y.dt?1:-1)});
+  var R=L.concat(P);return R.length?R:G.slice(0,1)}
+function render(){extGames();var G=GAMES,live=G.filter(function(g){return g.st==='in'}).length,HG=homeList(G),h=HG[0];
   document.getElementById('hdr').textContent=live+' live now · '+G.length+' games shown'+(okNet?'':' · offline, showing last data');
   document.getElementById('stamp').textContent='Live data from ESPN · updated '+(last?new Date(last).toLocaleTimeString():'-')+(spoil?' · spoiler-free':'');
   document.getElementById('sp').textContent=spoil?'ON':'OFF';document.getElementById('sp2').textContent=spoil?'ON':'OFF';
   document.getElementById('hsb').innerHTML=bar(h);document.querySelector('#home .prev').dataset.g=G.indexOf(h);document.querySelector('#home .cab').dataset.g=G.indexOf(h);
   document.getElementById('hinfo').innerHTML='<h3>'+(h.st==='in'?'<span class="tag">LIVE</span>':'')+h.t+'</h3><p>'+h.m+' · '+lab(h)+' · press OK to watch on your playlist</p>';
   var k,g,e;
-  for(k=0;k<4;k++){g=HG[6+k];e=document.getElementById('t'+k);e.style.display=g?'':'none';if(!g)continue;e.dataset.g=G.indexOf(g);e.innerHTML='<span class="dot'+(g.st==='in'?' l':'')+'"></span><b>'+g.a+' @ '+g.b+'</b><em>'+(g.st==='pre'?lab(g):(g.st==='in'?'LIVE · ':'FINAL · ')+sc(g,'a')+'-'+sc(g,'h'))+'</em>'}
-  for(k=0;k<5;k++){g=HG[1+k];e=document.getElementById('c'+k);e.style.display=g?'':'none';if(!g)continue;e.dataset.g=G.indexOf(g);e.innerHTML='<span class="lg">'+g.m.split(' - ').pop().toUpperCase()+'</span>'+(g.st==='in'?'<span class="lv">LIVE</span>':'')+'<div class="ln w"><span>'+g.a+'</span><span>'+sc(g,'a')+'</span></div><div class="ln l"><span>'+g.b+'</span><span>'+sc(g,'h')+'</span></div><div class="ft">'+lab(g)+'</div>'}
+  document.getElementById('t3').style.display='none';for(k=0;k<3;k++){g=HG[11+k];e=document.getElementById('t'+k);e.style.display=g?'':'none';if(!g)continue;e.dataset.g=G.indexOf(g);e.innerHTML='<span class="dot'+(g.st==='in'?' l':'')+'"></span><b>'+g.a+' @ '+g.b+'</b><em>'+(g.st==='pre'?lab(g):(g.st==='in'?'LIVE · ':'FINAL · ')+sc(g,'a')+'-'+sc(g,'h'))+'</em>'}
+  for(k=0;k<10;k++){g=HG[1+k];e=document.getElementById('c'+k);e.style.display=g?'':'none';if(!g)continue;e.dataset.g=G.indexOf(g);e.innerHTML='<span class="lg">'+(isMy(g)?'\u2605 ':'')+g.m.split(' - ').pop().toUpperCase()+'</span>'+(g.st==='in'?'<span class="lv">LIVE</span>':'')+'<div class="ln w"><span>'+g.a+'</span><span>'+sc(g,'a')+'</span></div><div class="ln l"><span>'+g.b+'</span><span>'+sc(g,'h')+'</span></div><div class="ft">'+lab(g)+'</div>'}
   for(k=0;k<4;k++){g=HG[k]||HG[0];document.getElementById('ms'+k).innerHTML=bar(g);document.getElementById('mn'+k).textContent=g.m+' · '+g.t;document.getElementById('ms'+k).parentNode.dataset.g=G.indexOf(g)}}
 
 function checkUpdate(){

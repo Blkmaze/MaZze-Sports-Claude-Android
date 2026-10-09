@@ -380,7 +380,7 @@ function renderCh(){
     if(ch){r.children[0].textContent=idx+1;r.children[1].textContent=(FAV.indexOf(ch.n)>=0?'\u2605 ':'')+ch.n;r.children[2].textContent=ch.g;r.classList.toggle('on',idx===chPos)}}
   var cc=VIEW[chPos]!==undefined?CH[VIEW[chPos]]:null;
   document.getElementById('chn').textContent=cc?cc.n:(chv==='fav'?'No favorites yet':(chv==='rec'?'Nothing played yet':'No channels'));var fb=document.getElementById('chfav');if(fb)fb.textContent=cc&&FAV.indexOf(cc.n)>=0?'\u2605 Remove from favorites':'\u2606 Add to favorites';
-  document.getElementById('chg').textContent=cc?(cc.g||'Ungrouped'):'Add a playlist in Settings';
+  document.getElementById('chg').textContent=cc?(cc.g||'Ungrouped'):'Add a playlist in Settings';if(chq.length&&GSEL)document.getElementById('chg').textContent='Game: '+GSEL.a+' vs '+GSEL.b+' · '+(GSEL.st==='in'?'LIVE NOW':dayLab(GSEL))+(cc?' · '+(cc.g||''):'');
   var sp=document.querySelectorAll('#azs span');for(i=0;i<sp.length;i++)sp[i].className=i===azi?'on':''}
 function chFocusRow(){var rows=document.querySelectorAll('#chl .cr');var i=chPos-winStart();if(rows[i])focus(rows[i])}
 function chStep(d){if(!VIEW.length)return;chPos=Math.max(0,Math.min(VIEW.length-1,chPos+d));renderCh();chFocusRow()}
@@ -557,9 +557,10 @@ function matchChannel(g){
   for(i=0;i<pool.length;i++){k=CH[pool[i]].k;if((an.length>3&&k.indexOf(an)>=0)||(bn.length>3&&k.indexOf(bn)>=0))return pool[i]}
   for(i=0;i<pool.length;i++){k=CH[pool[i]].k;if(lg&&k.indexOf(lg)>=0)return pool[i]}
   return -1}
+var GSEL=null;
 function playGame(g){
   var ci=matchChannel(g);
-  if(ci<0){if(!CH.length){toast('Add a playlist in Settings first');show('st');return}chq=[g.an,g.bn,g.lg].map(function(x){return (x||'').toLowerCase()}).filter(function(x){return x.length>2});SPT='';chv='';grp='';buildView();renderCh();show('ch');toast(VIEW.length?'No exact channel found. Showing channels for '+g.a+' / '+g.b+'. Press OK on one.':'No channels found for '+g.a+' / '+g.b+'. Try the Guide or Channels.');return}
+  if(ci<0){if(!CH.length){toast('Add a playlist in Settings first');show('st');return}GSEL=g;chq=[g.an,g.bn,g.lg].map(function(x){return (x||'').toLowerCase()}).filter(function(x){return x.length>2});SPT='';chv='';grp='';buildView();renderCh();show('ch');toast(VIEW.length?'No exact channel found for '+g.a+' / '+g.b+' ('+(g.st==='in'?'LIVE':dayLab(g))+'). Press OK on one.':'No channels found for '+g.a+' / '+g.b+'. Try the Guide or Channels.');return}
   playChannelIdx(ci)}
 function pri(g){var d=new Date().getDay();if(isMy(g))return 200;if(isSec(g)){return (new Date().getDay()===6?100:0)+(g.rk<=25?110-g.rk:40)}if(g.lg==='NCAAH')return 1;if(g.col){var b=(d===6&&g.lg==='NCAAF')?100:0;return g.rk<=20?b+100-g.rk:0}if(g.lg==='NFL'){var nb=(d===0||d===1||d===4)?120:0;return nb+60+g.wp*30}return 50+g.wp*10}
 function extGames(){var seen={};GAMES.forEach(function(g){seen[g.id]=1});gdAll().forEach(function(g){if(!seen[g.id]&&g.st!=='post'){seen[g.id]=1;GAMES.push(g)}})}

@@ -112,6 +112,7 @@
     <div class="ri f" data-t="Basketball"><i>&#127936;</i>Basketball</div>
     <div class="ri f" data-t="Soccer"><i>&#9917;</i>Soccer</div>
     <div class="ri f" data-t="Hockey"><i>&#127954;</i>Hockey</div>
+    <div class="ri f" data-t="College"><i>&#127891;</i>College</div>
     <div class="ri f" data-t="Fights"><i>&#129354;</i>Fights</div>
   </div>
   <div id="main">
@@ -238,9 +239,9 @@ function http(url,cb){
   if(A&&A.httpGet){var id=++cid;cbs[id]=cb;A.httpGet(id,url)}
   else fetch(url).then(function(r){return r.text()}).then(function(t){cb(null,t)}).catch(function(e){cb(String(e),'')})}
 
-var SPT='',SPRE={Football:/nfl|ncaaf|\bcfb\b|college football|redzone|sunday ticket|nfl network/i,Basketball:/nba|ncaab|college basketball|basketball|wnba|march madness/i,Soccer:/soccer|premier league|\bepl\b|la ?liga|bundesliga|serie a|ligue 1|\bmls\b|champions league|uefa|fifa|copa|futbol/i,Hockey:/nhl|hockey/i,Fights:/ufc|boxing|wwe|fight|\bmma\b|\baew\b|bellator|\bppv\b/i};
+var SPT='',SPRE={Football:/nfl|ncaaf|\bcfb\b|college football|redzone|sunday ticket|nfl network/i,Basketball:/nba|ncaab|college basketball|basketball|wnba|march madness/i,Soccer:/soccer|premier league|\bepl\b|la ?liga|bundesliga|serie a|ligue 1|\bmls\b|champions league|uefa|fifa|copa|futbol/i,Hockey:/nhl|hockey/i,College:/ncaa|college|\bcfb\b|march madness|big ten|\bbtn\b|sec network|acc network|big 12|pac-12/i,Fights:/ufc|boxing|wwe|fight|\bmma\b|\baew\b|bellator|\bppv\b/i};
 var CH=[],VIEW=[],SPORTS=null,chPos=0,showAll=sget('showall','0')==='1',grp='',groups=[],plMode=sget('plmode','m3u');
-var SP_RE=/sport|espn|fox sports|\bfs1\b|\bfs2\b|nfl|nba|nhl|mlb|mls|nbc sports|cbs sports|bein|sky sports|tnt|dazn|fight|ufc|boxing|wwe|golf|tennis|racing|f1|nascar|soccer|football|basketball|hockey|baseball|premier|laliga|bundesliga|big ten|btn|sec network|acc network|bally|msg|nesn|yes network/i;
+var SP_RE=/ncaa|college|sport|espn|fox sports|\bfs1\b|\bfs2\b|nfl|nba|nhl|mlb|mls|nbc sports|cbs sports|bein|sky sports|tnt|dazn|fight|ufc|boxing|wwe|golf|tennis|racing|f1|nascar|soccer|football|basketball|hockey|baseball|premier|laliga|bundesliga|big ten|btn|sec network|acc network|bally|msg|nesn|yes network/i;
 function parseM3U(t){var L=t.split(/\r?\n/),out=[],i;
   for(i=0;i<L.length;i++){var l=L[i];
     if(l.indexOf('#EXTINF')===0){
@@ -361,7 +362,7 @@ function loadGames(){
     if(document.getElementById('sq').classList.contains('on'))document.getElementById('sqt').textContent=(GAMES[gi]||GAMES[0]).t}
   LG.forEach(function(l,li){
     if(NEXT[li]&&NEXT[li]>now){res[li]=CACHE[li];left--;if(left===0)done();return}
-    http('https://site.api.espn.com/apis/site/v2/sports/'+l[0]+'/scoreboard',function(err,t){
+    http('https://site.api.espn.com/apis/site/v2/sports/'+l[0]+'/scoreboard'+(l[0]==='football/college-football'?'?groups=80&limit=200':(l[0]==='basketball/mens-college-basketball'?'?groups=50&limit=200':'')),function(err,t){
       var r=null;
       if(!err){try{r=(JSON.parse(t).events||[]).map(function(e){return norm(l,e)}).filter(Boolean)}catch(x){r=null}}
       if(r===null){bad++;r=CACHE[li]||[]}else{CACHE[li]=r}

@@ -126,10 +126,10 @@
         </div>
         <div class="side">
           <h4>UP NEXT</h4>
-          <div class="tm f" id="t0" data-act="sqgame" data-g="0"><span class="dot"></span><b>-</b><em>-</em></div>
-          <div class="tm f" id="t1" data-act="sqgame" data-g="0"><span class="dot"></span><b>-</b><em>-</em></div>
-          <div class="tm f" id="t2" data-act="sqgame" data-g="0"><span class="dot"></span><b>-</b><em>-</em></div>
-          <div class="tm f" id="t3" data-act="sqgame" data-g="0"><span class="dot"></span><b>-</b><em>-</em></div>
+          <div class="tm f" id="t0" data-act="watch" data-g="0"><span class="dot"></span><b>-</b><em>-</em></div>
+          <div class="tm f" id="t1" data-act="watch" data-g="0"><span class="dot"></span><b>-</b><em>-</em></div>
+          <div class="tm f" id="t2" data-act="watch" data-g="0"><span class="dot"></span><b>-</b><em>-</em></div>
+          <div class="tm f" id="t3" data-act="watch" data-g="0"><span class="dot"></span><b>-</b><em>-</em></div>
           <h4>SPOILER-FREE MODE</h4>
           <div class="tm f" data-act="toggle"><b>Spoiler-free scores</b><em id="sp2">OFF</em></div>
         </div>
@@ -382,16 +382,17 @@ function playGame(g){
   var ci=matchChannel(g);
   if(ci<0){toast(CH.length?'No channel matched this game - pick one in Channels':'Add a playlist in Settings first');show(CH.length?'ch':'st');return}
   playChannelIdx(ci)}
-function render(){var G=GAMES,live=G.filter(function(g){return g.st==='in'}).length,h=G[0];
+function homeList(G){var L=G.filter(function(g){return g.st==='in'});if(L.length)return L;var S=G.filter(function(g){return g.st==='pre'&&g.dt&&(new Date(g.dt).getTime()-Date.now())<10800000});return S.length?S:G.slice(0,1)}
+function render(){var G=GAMES,live=G.filter(function(g){return g.st==='in'}).length,HG=homeList(G),h=HG[0];
   document.getElementById('hdr').textContent=live+' live now · '+G.length+' games shown'+(okNet?'':' · offline, showing last data');
   document.getElementById('stamp').textContent='Live data from ESPN · updated '+(last?new Date(last).toLocaleTimeString():'-')+(spoil?' · spoiler-free':'');
   document.getElementById('sp').textContent=spoil?'ON':'OFF';document.getElementById('sp2').textContent=spoil?'ON':'OFF';
-  document.getElementById('hsb').innerHTML=bar(h);
+  document.getElementById('hsb').innerHTML=bar(h);document.querySelector('#home .prev').dataset.g=G.indexOf(h);document.querySelector('#home .cab').dataset.g=G.indexOf(h);
   document.getElementById('hinfo').innerHTML='<h3>'+(h.st==='in'?'<span class="tag">LIVE</span>':'')+h.t+'</h3><p>'+h.m+' · '+lab(h)+' · press OK to watch on your playlist</p>';
   var k,g,e;
-  for(k=0;k<4;k++){g=G[6+k]||G[(k+1)%G.length];e=document.getElementById('t'+k);e.dataset.g=G.indexOf(g);e.innerHTML='<span class="dot'+(g.st==='in'?' l':'')+'"></span><b>'+g.a+' @ '+g.b+'</b><em>'+(g.st==='pre'?lab(g):(g.st==='in'?'LIVE · ':'FINAL · ')+sc(g,'a')+'-'+sc(g,'h'))+'</em>'}
-  for(k=0;k<5;k++){g=G[1+k]||G[k%G.length];e=document.getElementById('c'+k);e.dataset.g=G.indexOf(g);e.innerHTML='<span class="lg">'+g.m.split(' - ').pop().toUpperCase()+'</span>'+(g.st==='in'?'<span class="lv">LIVE</span>':'')+'<div class="ln w"><span>'+g.a+'</span><span>'+sc(g,'a')+'</span></div><div class="ln l"><span>'+g.b+'</span><span>'+sc(g,'h')+'</span></div><div class="ft">'+lab(g)+'</div>'}
-  for(k=0;k<4;k++){g=G[k]||G[0];document.getElementById('ms'+k).innerHTML=bar(g);document.getElementById('mn'+k).textContent=g.m+' · '+g.t;document.getElementById('ms'+k).parentNode.dataset.g=G.indexOf(g)}}
+  for(k=0;k<4;k++){g=HG[6+k];e=document.getElementById('t'+k);e.style.display=g?'':'none';if(!g)continue;e.dataset.g=G.indexOf(g);e.innerHTML='<span class="dot'+(g.st==='in'?' l':'')+'"></span><b>'+g.a+' @ '+g.b+'</b><em>'+(g.st==='pre'?lab(g):(g.st==='in'?'LIVE · ':'FINAL · ')+sc(g,'a')+'-'+sc(g,'h'))+'</em>'}
+  for(k=0;k<5;k++){g=HG[1+k];e=document.getElementById('c'+k);e.style.display=g?'':'none';if(!g)continue;e.dataset.g=G.indexOf(g);e.innerHTML='<span class="lg">'+g.m.split(' - ').pop().toUpperCase()+'</span>'+(g.st==='in'?'<span class="lv">LIVE</span>':'')+'<div class="ln w"><span>'+g.a+'</span><span>'+sc(g,'a')+'</span></div><div class="ln l"><span>'+g.b+'</span><span>'+sc(g,'h')+'</span></div><div class="ft">'+lab(g)+'</div>'}
+  for(k=0;k<4;k++){g=HG[k]||HG[0];document.getElementById('ms'+k).innerHTML=bar(g);document.getElementById('mn'+k).textContent=g.m+' · '+g.t;document.getElementById('ms'+k).parentNode.dataset.g=G.indexOf(g)}}
 
 function checkUpdate(){
   var u=document.getElementById('ustat'),mine=A&&A.versionCode?A.versionCode():0;
@@ -407,6 +408,12 @@ function checkUpdate(){
     u.textContent='Downloading build '+n+'...';
     if(A&&A.installApk)A.installApk(url);else u.textContent='Update available: build '+n})}
 
+function autoCheck(){
+  var mine=A&&A.versionCode?A.versionCode():0;if(!mine)return;
+  http('https://api.github.com/repos/Blkmaze/MaZze-Sports-Claude-Android/releases/tags/Claude-latest',function(err,t){
+    if(err)return;var j;try{j=JSON.parse(t)}catch(x){return}
+    var m=/Automated build (\d+)/.exec(j.body||'');var n=m?parseInt(m[1],10):0;
+    if(n>mine){toast('Update available: build '+n+'. Open Settings, then Check for updates.');document.getElementById('ustat').textContent='Update available: build '+n}})}
 function sel(){if(!cur)return;
   if(cur.tagName==='INPUT'){cur.focus();return}
   if(cur.dataset.s){if(cur.dataset.s==='ch'&&SPT){SPT='';buildView();renderCh()}show(cur.dataset.s);return}
@@ -449,7 +456,7 @@ addEventListener('click',function(e){var t=e.target.closest('.f');if(t){focus(t)
 initCh();applyMode();
 document.getElementById('in_m3u').value=sget('m3u','');document.getElementById('in_srv').value=sget('srv','');document.getElementById('in_usr').value=sget('usr','');document.getElementById('in_pwd').value=sget('pwd','');
 document.getElementById('ver').textContent='Version '+(A&&A.versionCode?'1.0.'+A.versionCode()+' (build '+A.versionCode()+')':'web preview');
-render();renderCh();loadGames();setInterval(loadGames,20000);
+render();renderCh();loadGames();setTimeout(autoCheck,4000);setInterval(loadGames,20000);
 if((plMode==='m3u'&&sget('m3u',''))||(plMode==='xt'&&sget('srv','')))setTimeout(loadPlaylist,300);
 var ii=document.getElementById('in_ini');ii.value=sget('ini','');ii.addEventListener('input',function(){this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');sset('ini',this.value);drawSq()});
 drawSq();focus(document.querySelector('#home .prev'));

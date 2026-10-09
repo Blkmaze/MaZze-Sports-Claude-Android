@@ -238,6 +238,7 @@ function http(url,cb){
   if(A&&A.httpGet){var id=++cid;cbs[id]=cb;A.httpGet(id,url)}
   else fetch(url).then(function(r){return r.text()}).then(function(t){cb(null,t)}).catch(function(e){cb(String(e),'')})}
 
+var SPT='',SPRE={Football:/nfl|ncaaf|\bcfb\b|college football|redzone|sunday ticket|nfl network/i,Basketball:/nba|ncaab|college basketball|basketball|wnba|march madness/i,Soccer:/soccer|premier league|\bepl\b|la ?liga|bundesliga|serie a|ligue 1|\bmls\b|champions league|uefa|fifa|copa|futbol/i,Hockey:/nhl|hockey/i,Fights:/ufc|boxing|wwe|fight|\bmma\b|\baew\b|bellator|\bppv\b/i};
 var CH=[],VIEW=[],SPORTS=null,chPos=0,showAll=sget('showall','0')==='1',grp='',groups=[],plMode=sget('plmode','m3u');
 var SP_RE=/sport|espn|fox sports|\bfs1\b|\bfs2\b|nfl|nba|nhl|mlb|mls|nbc sports|cbs sports|bein|sky sports|tnt|dazn|fight|ufc|boxing|wwe|golf|tennis|racing|f1|nascar|soccer|football|basketball|hockey|baseball|premier|laliga|bundesliga|big ten|btn|sec network|acc network|bally|msg|nesn|yes network/i;
 function parseM3U(t){var L=t.split(/\r?\n/),out=[],i;
@@ -260,9 +261,10 @@ function setChannels(arr){
 function buildView(){
   var base=[],i;
   if(showAll){for(i=0;i<CH.length;i++)base.push(i)}else base=SPORTS?SPORTS.slice():[];
+  if(SPT){base=[];var re=SPRE[SPT];for(i=0;i<CH.length;i++){if(re.test(CH[i].g+' '+CH[i].n))base.push(i)}}
   if(grp)base=base.filter(function(x){return CH[x].g===grp});
   VIEW=base;chPos=0;
-  document.getElementById('chmode').textContent=showAll?'All channels':'Sports only';
+  document.getElementById('chmode').textContent=SPT?(SPT+' only - OK for all sports'):(showAll?'All channels':'Sports only');
   document.getElementById('chgrp').textContent=grp?grp:'All groups';
   document.getElementById('chcount').textContent=VIEW.length+' shown'}
 function loadPlaylist(){
@@ -390,8 +392,8 @@ function checkUpdate(){
 
 function sel(){if(!cur)return;
   if(cur.tagName==='INPUT'){cur.focus();return}
-  if(cur.dataset.s){show(cur.dataset.s);return}
-  if(cur.dataset.t&&cur.classList.contains('ri')){toast('Pick a game from Home or Channels');return}
+  if(cur.dataset.s){if(cur.dataset.s==='ch'&&SPT){SPT='';buildView();renderCh()}show(cur.dataset.s);return}
+  if(cur.dataset.t&&cur.classList.contains('ri')){if(!CH.length){toast('Add a playlist in Settings first');show('st');return}SPT=cur.dataset.t;grp='';buildView();renderCh();show('ch');if(!VIEW.length)toast('No '+SPT+' channels found in your playlist');return}
   var a=cur.dataset.act;
   if(a==='play'||a==='watch'||a==='sound'){playGame(GAMES[+cur.dataset.g]||GAMES[0])}
   else if(a==='sqgame')openSq(+cur.dataset.g||0);
@@ -404,7 +406,7 @@ function sel(){if(!cur)return;
     else{toast('Opening '+cur.dataset.p+' checkout for $'+(n*price)+' on parlaypro-squares.netlify.app');if(A&&A.openUrl)A.openUrl('https://parlaypro-squares.netlify.app/')}}
   else if(a==='toggle'){spoil=!spoil;sset('spoil',spoil?'1':'0');render();toast('Spoiler-free '+(spoil?'ON':'OFF'))}
   else if(a==='chplay'){var gi2=VIEW[winStart()+(+cur.dataset.r)];if(gi2!==undefined)playChannelIdx(gi2)}
-  else if(a==='chmode'){showAll=!showAll;sset('showall',showAll?'1':'0');buildView();renderCh()}
+  else if(a==='chmode'){if(SPT){SPT=''}else{showAll=!showAll;sset('showall',showAll?'1':'0')}buildView();renderCh()}
   else if(a==='chgroup'){var gl=[''].concat(groups),ix=gl.indexOf(grp);grp=gl[(ix+1)%gl.length];buildView();renderCh()}
   else if(a==='az'){azJump();chFocusRow()}
   else if(a==='pm'){plMode=cur.dataset.m;sset('plmode',plMode);applyMode()}

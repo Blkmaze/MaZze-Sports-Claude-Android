@@ -148,8 +148,8 @@
         <div class="sqb"><div class="grid" id="grid"></div></div>
         <div class="sqp">
           <h3 id="sqt">-</h3>
-          <p>Numbers are drawn at random once 75% of squares are sold. Refundable if the board does not fill.</p>
-          <p>Price per square</p>
+          <p>Numbers are drawn at random for each game. Refundable if the board does not fill.</p>
+          <p>Your initials (3 letters)</p><input class="inp f" id="in_ini" type="text" maxlength="4" placeholder="ABC"><p>Price per square</p>
           <div class="prow" id="pr"></div>
           <p>Your squares: <b id="cnt">0</b></p>
           <div class="tot" id="tot">$0</div>
@@ -323,11 +323,13 @@ function playChannelIdx(gi){
 
 var GAMES=[{id:'x',t:'Loading...',a:'-',b:'-',an:'',bn:'',m:'Sports',as:'',hs:'',st:'pre',d:'',lg:''}];var spoil=sget('spoil','0')==='1';
 var PRICES=[5,10,20],price=10,gi=0,BD={};
-function bd(g){var id=g.id;if(!BD[id]){var tk={},sel={},n=0;for(var q=0;q<id.length;q++)n+=id.charCodeAt(q);for(var i=0;i<100;i++){if((i*7+n)%5<2)tk[i]=1}BD[id]={tk:tk,sel:sel}}return BD[id]}
+function shuf(sd){var a=[0,1,2,3,4,5,6,7,8,9],x=sd*9301+49297;for(var i=9;i>0;i--){x=(x*9301+49297)%233280;var j=Math.floor(x/233280*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function INI(){return (document.getElementById('in_ini').value||'').toUpperCase()}
+function bd(g){var id=g.id;if(!BD[id]){var tk={},sel={},n=0;for(var q=0;q<id.length;q++)n+=id.charCodeAt(q);for(var i=0;i<100;i++){if((i*7+n)%5<2)tk[i]=1}BD[id]={tk:tk,sel:sel,top:shuf(n),side:shuf(n+7)}}return BD[id]}
 function drawSq(){
   var g=GAMES[gi]||GAMES[0],b=bd(g),h='<div class="ax t"></div><div class="ax t" style="grid-column:span 10">'+g.a+' (top)  /  '+g.b+' (side)</div>';
-  h+='<div class="ax"></div>';for(var c2=0;c2<10;c2++)h+='<div class="ax">?</div>';
-  for(var r=0;r<10;r++){h+='<div class="ax">?</div>';for(var c3=0;c3<10;c3++){var i=r*10+c3,k=b.tk[i]?'tk':(b.sel[i]?'me':'');h+='<div class="sq f '+k+'" data-act="cell" data-i="'+i+'">'+(b.tk[i]?'X':(b.sel[i]?'YOU':''))+'</div>'}}
+  h+='<div class="ax"></div>';for(var c2=0;c2<10;c2++)h+='<div class="ax">'+b.top[c2]+'</div>';
+  for(var r=0;r<10;r++){h+='<div class="ax">'+b.side[r]+'</div>';for(var c3=0;c3<10;c3++){var i=r*10+c3,k=b.tk[i]?'tk':(b.sel[i]?'me':'');h+='<div class="sq f '+k+'" data-act="cell" data-i="'+i+'">'+(b.tk[i]?'X':(b.sel[i]?INI().slice(0,4):''))+'</div>'}}
   document.getElementById('grid').innerHTML=h;
   document.getElementById('sqt').textContent=g.t;
   var n=Object.keys(b.sel).length;document.getElementById('cnt').textContent=n;document.getElementById('tot').textContent='$'+(n*price);
@@ -399,10 +401,10 @@ function sel(){if(!cur)return;
   else if(a==='sqgame')openSq(+cur.dataset.g||0);
   else if(a==='game'){gi=+cur.dataset.g;drawSq();refocus('#gp .pill:nth-child('+(gi+1)+')')}
   else if(a==='price'){price=+cur.dataset.p;var k=[].indexOf.call(cur.parentNode.children,cur);drawSq();refocus('#pr .big:nth-child('+(k+1)+')')}
-  else if(a==='cell'){var i=+cur.dataset.i,b=bd(GAMES[gi]);if(b.tk[i]){toast('That square is taken')}else{if(b.sel[i])delete b.sel[i];else b.sel[i]=1;drawSq();refocus('.sq[data-i="'+i+'"]')}}
+  else if(a==='cell'){var i=+cur.dataset.i,b=bd(GAMES[gi]);if(b.tk[i]){toast('That square is taken')}else if(INI().length<3){toast('Enter your initials first (3 letters)');refocus('#in_ini')}else{if(b.sel[i])delete b.sel[i];else b.sel[i]=1;drawSq();refocus('.sq[data-i="'+i+'"]')}}
   else if(a==='clear'){bd(GAMES[gi]).sel={};drawSq();refocus('[data-act=clear]')}
   else if(a==='pay'){var n=Object.keys(bd(GAMES[gi]).sel).length;
-    if(!n){toast('Pick at least one square first')}
+    if(!n){toast('Pick at least one square first')}else if(INI().length<3){toast('Enter your initials first (3 letters)');refocus('#in_ini')}
     else{toast('Opening '+cur.dataset.p+' checkout for $'+(n*price)+' on parlaypro-squares.netlify.app');if(A&&A.openUrl)A.openUrl('https://parlaypro-squares.netlify.app/')}}
   else if(a==='toggle'){spoil=!spoil;sset('spoil',spoil?'1':'0');render();toast('Spoiler-free '+(spoil?'ON':'OFF'))}
   else if(a==='chplay'){var gi2=VIEW[winStart()+(+cur.dataset.r)];if(gi2!==undefined)playChannelIdx(gi2)}
@@ -434,6 +436,7 @@ document.getElementById('in_m3u').value=sget('m3u','');document.getElementById('
 document.getElementById('ver').textContent='Version '+(A&&A.versionCode?'1.0.'+A.versionCode()+' (build '+A.versionCode()+')':'web preview');
 render();renderCh();loadGames();setInterval(loadGames,20000);
 if((plMode==='m3u'&&sget('m3u',''))||(plMode==='xt'&&sget('srv','')))setTimeout(loadPlaylist,300);
+var ii=document.getElementById('in_ini');ii.value=sget('ini','');ii.addEventListener('input',function(){this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');sset('ini',this.value);drawSq()});
 drawSq();focus(document.querySelector('#home .prev'));
 })();
 </script>

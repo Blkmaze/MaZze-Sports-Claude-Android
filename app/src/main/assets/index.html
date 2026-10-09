@@ -128,6 +128,11 @@
   @keyframes tkm{from{transform:translateX(0)}to{transform:translateX(-50%)}}
   .prev{height:430px}.tm{height:62px;font-size:21px}.side{gap:10px}.strip{margin-top:12px}
   .rh{font-size:20px;color:var(--mute);letter-spacing:2px;font-weight:700;margin:14px 6px 0}
+  #rkl{display:grid;grid-template-columns:1fr 1fr;grid-auto-flow:column;grid-template-rows:repeat(13,58px);gap:8px 20px;margin-top:8px}
+  .rkr{display:flex;align-items:center;gap:16px;padding:0 18px;border-radius:14px;background:var(--panel);border:2px solid var(--line);font-size:22px}
+  .rkr b{width:46px;color:var(--lime);font-size:26px}.rkr .n{flex:1;font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .rkr em{font-style:normal;color:var(--mute);font-size:19px}.rkr.sec{border-color:var(--hot)}
+  .rkr i{font-style:normal;background:var(--hot);color:#1b0b00;font-weight:900;font-size:14px;padding:2px 8px;border-radius:6px}
 </style>
 </head>
 <body>
@@ -211,6 +216,11 @@
       </div>
       <div id="qrm"><div class="qrc"><h3 id="qrh"></h3><img id="qri" alt=""><p id="qrl"></p><p id="qrs"></p>
         <div class="prow"><div class="big f" data-act="qrok">Payment received</div><div class="big f" data-act="qrno">Cancel &amp; release squares</div></div></div></div>
+    </section>
+    <section class="screen" id="rk">
+      <div class="top"><h2>College Football Rankings</h2><span id="rkh">AP Top 25</span></div>
+      <div class="gp" id="rkf"></div>
+      <div id="rkl"></div>
     </section>
     <section class="screen" id="mv">
       <div class="top"><h2>Multi-view</h2><span id="stamp">Live data from ESPN</span></div>
@@ -467,7 +477,7 @@ function loadGames(){
     okNet=true;last=Date.now();var all=[];
     res.forEach(function(x){all=all.concat(x||[])});
     var rank={in:0,pre:1,post:2};
-    all=all.filter(function(g){return !(g.col&&g.rk>20)});all.sort(function(x,y){if(rank[x.st]!==rank[y.st])return rank[x.st]-rank[y.st];if(x.st!=='post'&&pri(x)!==pri(y))return pri(y)-pri(x);return x.st==='post'?(y.dt>x.dt?1:-1):(x.dt>y.dt?1:-1)});
+    all=all.filter(function(g){return !(g.col&&g.rk>20&&!isSec(g))});all.sort(function(x,y){if(rank[x.st]!==rank[y.st])return rank[x.st]-rank[y.st];if(x.st!=='post'&&pri(x)!==pri(y))return pri(y)-pri(x);return x.st==='post'?(y.dt>x.dt?1:-1):(x.dt>y.dt?1:-1)});
     GAMES=all.slice(0,10);ALLG=all.filter(function(g){return g.st!=='post'});loadTom();tickBuild();loadNews();
     if(!GAMES.length)GAMES=[{id:'x',t:'No games',a:'-',b:'-',an:'',bn:'',m:'Sports',as:'',hs:'',st:'pre',d:'',lg:''}];
     if(gi>=GAMES.length)gi=0;
@@ -488,12 +498,12 @@ function loadTom(){var now=Date.now();if(TNEXT>now)return;TNEXT=now+600000;var d
   LG.forEach(function(l,li){http('https://site.api.espn.com/apis/site/v2/sports/'+l[0]+'/scoreboard?dates='+ds+((l[0]==='football/nfl'||l[0]==='football/college-football')?'-'+de:'')+(l[0]==='football/college-football'?'&groups=80&limit=200':(l[0]==='basketball/mens-college-basketball'?'&groups=50&limit=200':'')),function(err,t){
     if(err)return;try{TOM[li]=(JSON.parse(t).events||[]).map(function(e){return norm(l,e)}).filter(Boolean)}catch(x){return}
     if(document.getElementById('gd').classList.contains('on')&&cur&&!document.getElementById('gdl').contains(cur))drawGd();render();tickBuild()})})}
-function gdAll(){var a=ALLG.slice(),seen={},k;for(k in TOM)(TOM[k]||[]).forEach(function(g){if(g.st==='pre'&&!(g.col&&g.rk>20))a.push(g)});a=a.filter(function(g){if(seen[g.id])return false;seen[g.id]=1;return true});a.sort(function(x,y){if(x.st!==y.st&&(x.st==='in'||y.st==='in'))return x.st==='in'?-1:1;return x.dt>y.dt?1:(x.dt<y.dt?-1:0)});return a}
+function gdAll(){var a=ALLG.slice(),seen={},k;for(k in TOM)(TOM[k]||[]).forEach(function(g){if(g.st==='pre'&&!(g.col&&g.rk>20&&!isSec(g)))a.push(g)});a=a.filter(function(g){if(seen[g.id])return false;seen[g.id]=1;return true});a.sort(function(x,y){if(x.st!==y.st&&(x.st==='in'||y.st==='in'))return x.st==='in'?-1:1;return x.dt>y.dt?1:(x.dt<y.dt?-1:0)});return a}
 function dayDiff(g){var d=new Date(g.dt),n=new Date();return Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(n.getFullYear(),n.getMonth(),n.getDate()))/86400000)}
 function dayLab(g){var d=new Date(g.dt),df=dayDiff(g);return (df===0?'Today':(df===1?'Tomorrow':d.toLocaleDateString([],{weekday:'short'})))+' '+d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}
 function drawGd(){
   var a=gdAll(),per=9,h='',f='';
-  if(gdlg)a=a.filter(function(g){return g.lg===gdlg});document.getElementById('gdt').textContent=gdlg?('Guide - '+gdlgN):'Guide';
+  if(gdlg)a=a.filter(function(g){return gdlg==='SEC'?isSec(g):g.lg===gdlg});document.getElementById('gdt').textContent=gdlg?('Guide - '+gdlgN):'Guide';
   if(gdf.indexOf('sp:')===0){var spn=gdf.slice(3);a=a.filter(function(g){var c=g.m.split(' - ')[0];return spn==='College'?(g.col||c.indexOf('College')===0):(c===spn&&!g.col)})}
   if(gdf==='live')a=a.filter(function(g){return g.st==='in'});
   if(gdf==='today')a=a.filter(function(g){return g.st==='in'||dayDiff(g)===0});
@@ -507,21 +517,34 @@ function drawGd(){
   document.getElementById('gdf').innerHTML=f;
   document.getElementById('gdl').innerHTML=h||'<p style="font-size:24px;color:var(--mute)">'+(gdlg?'No '+gdlgN+' games live or scheduled today or tomorrow.':'Nothing scheduled here yet. Tomorrow games load a moment after you open the Guide.')+'</p>';
   if(cur&&!document.body.contains(cur)){var f1=document.querySelector('#gd .f');if(f1)focus(f1)}}
+var SECN=['Alabama Crimson Tide','Arkansas Razorbacks','Auburn Tigers','Florida Gators','Georgia Bulldogs','Kentucky Wildcats','LSU Tigers','Mississippi State Bulldogs','Missouri Tigers','Oklahoma Sooners','Ole Miss Rebels','South Carolina Gamecocks','Tennessee Volunteers','Texas Longhorns','Texas A&M Aggies','Vanderbilt Commodores'],RK=[],RKF='all',RKT=0,RKH='AP Top 25';
+function isSec(g){var t=g.t||'',i;if(g.lg!=='NCAAF')return false;for(i=0;i<SECN.length;i++)if(t.indexOf(SECN[i])>=0)return true;return false}
+function loadRank(cb){http('https://site.api.espn.com/apis/site/v2/sports/football/college-football/rankings',function(err,t){if(err){cb(err);return}try{var j=JSON.parse(t),r=(j.rankings||[])[0];RK=((r&&r.ranks)||[]).map(function(x){var tm=x.team||{};return{r:x.current,n:((tm.location||'')+' '+(tm.name||'')).trim()||tm.nickname||'',rec:x.recordSummary||''}});RKH=(r&&r.name)||'AP Top 25'}catch(e){cb('parse');return}cb(null)})}
+function drawRk(){var a=RK.filter(function(x){return RKF!=='sec'||SECN.indexOf(x.n)>=0}),h='',f='';
+  a.forEach(function(x){var s=SECN.indexOf(x.n)>=0;h+='<div class="rkr'+(s?' sec':'')+'"><b>'+x.r+'</b><span class="n">'+x.n+'</span>'+(s?'<i>SEC</i>':'')+'<em>'+x.rec+'</em></div>'});
+  if(!a.length)h='<p style="font-size:24px;color:var(--mute)">'+(RK.length?'No SEC teams in the poll.':'Loading rankings...')+'</p>';
+  f='<div class="pill f'+(RKF==='all'?' on':'')+'" data-act="rkf" data-v="all">AP Top 25</div><div class="pill f'+(RKF==='sec'?' on':'')+'" data-act="rkf" data-v="sec">SEC teams only</div><span class="gdp">'+RKH+'</span>';
+  document.getElementById('rkf').innerHTML=f;document.getElementById('rkl').innerHTML=h;
+  var n=RK.filter(function(x){return SECN.indexOf(x.n)>=0}).length;document.getElementById('rkh').textContent=RK.length?(n+' SEC teams in the Top 25'):'Loading...';
+  if(cur&&!document.body.contains(cur)){var f1=document.querySelector('#rk .f');if(f1)focus(f1)}}
+function showRank(){if(Date.now()-RKT>300000){loadRank(function(e){if(!e)RKT=Date.now();drawRk();tickBuild()})}drawRk();show('rk')}
 function isMy(g){var t=(g.t||'').toLowerCase(),i;for(i=0;i<MYW.length;i++)if(t.indexOf(MYW[i])>=0)return true;return false}
 function tickBuild(){
   var it=[],G=gdAll(),B='<b>',E='</b> ';
   G.filter(function(g){return isMy(g)&&g.st!=='post'}).slice(0,4).forEach(function(g){it.push(B+'★ '+(g.st==='in'?'LIVE':dayLab(g))+E+g.t+' ('+g.lg+')')});
   G.filter(function(g){return g.st==='in'&&!isMy(g)}).slice(0,6).forEach(function(g){it.push(B+'LIVE'+E+g.a+' '+sc(g,'a')+' - '+sc(g,'h')+' '+g.b+' ('+g.lg+')')});
   G.filter(function(g){return g.st==='pre'&&dayDiff(g)===0&&!isMy(g)&&g.lg!=='NCAAH'}).sort(function(x,y){return pri(y)-pri(x)}).slice(0,4).forEach(function(g){it.push(B+'TONIGHT '+dayLab(g).replace('Today ','')+E+g.t+' ('+g.lg+')')});
-  G.filter(function(g){return g.lg==='NCAAF'&&g.st==='pre'&&g.rk<=20&&dayDiff(g)>=1}).sort(function(x,y){return x.rk-y.rk}).slice(0,5).forEach(function(g){it.push(B+dayLab(g)+E+'#'+g.rk+' '+g.t+' (NCAAF)')});
+  var secp=RK.filter(function(x){return SECN.indexOf(x.n)>=0});if(secp.length)it.push(B+'SEC IN THE AP POLL'+E+secp.slice(0,8).map(function(x){return '#'+x.r+' '+x.n.replace(/ (Crimson Tide|Razorbacks|Tigers|Gators|Bulldogs|Wildcats|Sooners|Rebels|Gamecocks|Volunteers|Longhorns|Aggies|Commodores)$/,'')}).join(', '));
+  G.filter(function(g){return isSec(g)&&g.st==='pre'&&dayDiff(g)>=0}).sort(function(x,y){return x.rk-y.rk}).slice(0,6).forEach(function(g){it.push(B+'SEC '+dayLab(g)+E+(g.rk<=25?'#'+g.rk+' ':'')+g.t)});
+  G.filter(function(g){return g.lg==='NCAAF'&&g.st==='pre'&&g.rk<=20&&dayDiff(g)>=1&&!isSec(g)}).sort(function(x,y){return x.rk-y.rk}).slice(0,5).forEach(function(g){it.push(B+dayLab(g)+E+'#'+g.rk+' '+g.t+' (NCAAF)')});
   G.filter(function(g){return g.lg==='NFL'&&g.st==='pre'&&dayDiff(g)>=0}).sort(function(x,y){return y.wp-x.wp}).slice(0,2).forEach(function(g,k){it.push(B+(k?'TOP MATCHUP ':'GAME OF THE WEEK ')+dayLab(g)+E+g.t)});
   NEWS.slice(0,12).forEach(function(h){it.push(h)});
   if(!it.length)it.push('Loading what is hot in sports...');
   var html=it.join('<i>&#9679;</i>');
   if(html!==tkLast){tkLast=html;var e=document.getElementById('tk');e.innerHTML=html+'<i>&#9679;</i>'+html+'<i>&#9679;</i>';e.style.animationDuration=Math.max(60,Math.round(html.replace(/<[^>]*>/g,'').length*0.17))+'s'}}
-function loadNews(){var now=Date.now();if(NNEXT>now)return;NNEXT=now+600000;var src=['football/nfl','basketball/wnba','basketball/nba','baseball/mlb','football/college-football','hockey/nhl'],res=[],left=src.length;
+function loadNews(){var now=Date.now();if(NNEXT>now)return;NNEXT=now+600000;if(Date.now()-RKT>300000){loadRank(function(e){if(!e){RKT=Date.now();tickBuild()}})}var src=['football/nfl','basketball/wnba','basketball/nba','baseball/mlb','football/college-football','hockey/nhl'],res=[],left=src.length;
   src.forEach(function(p,i){http('https://site.api.espn.com/apis/site/v2/sports/'+p+'/news?limit=4',function(err,t){var a=[];if(!err){try{a=(JSON.parse(t).articles||[]).map(function(x){return x.headline}).filter(Boolean).slice(0,3)}catch(e){}}res[i]=a;if(--left===0){var o=[],j;for(j=0;j<3;j++)res.forEach(function(r){if(r[j])o.push(r[j].replace(/</g,'&lt;'))});NEWS=o.slice(0,14);tickBuild()}})})}
-var openG='',RGS=[['Football','&#127944;',[['NFL','NFL'],['CFL','CFL']]],['Basketball','&#127936;',[['NBA','NBA'],['WNBA','WNBA']]],['Soccer','&#9917;',[['MLS','MLS'],['EPL','Premier League'],['La Liga','La Liga'],['Bundesliga','Bundesliga'],['Serie A','Serie A'],['Ligue 1','Ligue 1'],['UCL','Champions League'],['UEL','Europa League'],['Liga MX','Liga MX'],['NWSL','NWSL'],['A-League','A-League'],['J1','J1 League']]],['Hockey','&#127954;',[['NHL','NHL']]],['Baseball','&#9918;',[['MLB','MLB']]],['College','&#127891;',[['NCAAF','NCAA Football'],['NCAAB','NCAA Basketball'],['NCAAH','NCAA Hockey']]],['Fights','&#129354;',[]]];
+var openG='',RGS=[['Football','&#127944;',[['NFL','NFL'],['CFL','CFL']]],['Basketball','&#127936;',[['NBA','NBA'],['WNBA','WNBA']]],['Soccer','&#9917;',[['MLS','MLS'],['EPL','Premier League'],['La Liga','La Liga'],['Bundesliga','Bundesliga'],['Serie A','Serie A'],['Ligue 1','Ligue 1'],['UCL','Champions League'],['UEL','Europa League'],['Liga MX','Liga MX'],['NWSL','NWSL'],['A-League','A-League'],['J1','J1 League']]],['Hockey','&#127954;',[['NHL','NHL']]],['Baseball','&#9918;',[['MLB','MLB']]],['College','&#127891;',[['SEC','SEC Football'],['RANK','AP Top 25 Rankings'],['NCAAF','NCAA Football'],['NCAAB','NCAA Basketball'],['NCAAH','NCAA Hockey']]],['Fights','&#129354;',[]]];
 function drawRail(){var h='';RGS.forEach(function(g){var o=openG===g[0],n=g[2].length;h+='<div class="ri f'+(o?' open':'')+'" '+(n?'data-grp="'+g[0]+'"':'data-t="'+g[0]+'"')+'><i>'+g[1]+'</i>'+g[0]+(n?'<em class="car">'+(o?'&#9662;':'&#9656;')+'</em>':'')+'</div>';if(o){g[2].forEach(function(l){h+='<div class="ri f sub" data-lg="'+l[0]+'">'+l[1]+'</div>'});h+='<div class="ri f sub" data-t="'+g[0]+'">Channels</div>'}});document.getElementById('rsp').innerHTML=h}
 function initPay(){[['in_cash','cashtag','$7707438091'],['in_pp','ppme','williemayes'],['in_zel','zelle',''],['in_sync','syncode',''],['in_myt','myteams','atlanta,georgia']].forEach(function(x){var e=document.getElementById(x[0]);e.value=sget(x[1],x[2]);e.addEventListener('input',function(){sset(x[1],e.value.trim());if(x[0]==='in_myt'){MYW=e.value.toLowerCase().split(',').map(function(q){return q.trim()}).filter(Boolean);tickBuild()}if(x[0]==='in_sync'){lastSync='';clearTimeout(syT);syT=setTimeout(function(){syncNow(true)},2500)}})})}
 initPay();drawRail();tickBuild();setInterval(tickBuild,30000);setTimeout(function(){syncNow(false)},3000);setInterval(function(){if(syncCode().length>=8)syncNow(false)},15000);
@@ -537,7 +560,7 @@ function playGame(g){
   var ci=matchChannel(g);
   if(ci<0){toast(CH.length?'No channel matched this game - pick one in Channels':'Add a playlist in Settings first');show(CH.length?'ch':'st');return}
   playChannelIdx(ci)}
-function pri(g){var d=new Date().getDay();if(isMy(g))return 200;if(g.lg==='NCAAH')return 1;if(g.col){var b=(d===6&&g.lg==='NCAAF')?100:0;return g.rk<=20?b+100-g.rk:0}if(g.lg==='NFL'){var nb=(d===0||d===1||d===4)?120:0;return nb+60+g.wp*30}return 50+g.wp*10}
+function pri(g){var d=new Date().getDay();if(isMy(g))return 200;if(isSec(g)){return (new Date().getDay()===6?100:0)+(g.rk<=25?110-g.rk:40)}if(g.lg==='NCAAH')return 1;if(g.col){var b=(d===6&&g.lg==='NCAAF')?100:0;return g.rk<=20?b+100-g.rk:0}if(g.lg==='NFL'){var nb=(d===0||d===1||d===4)?120:0;return nb+60+g.wp*30}return 50+g.wp*10}
 function extGames(){var seen={};GAMES.forEach(function(g){seen[g.id]=1});gdAll().forEach(function(g){if(!seen[g.id]&&g.st!=='post'){seen[g.id]=1;GAMES.push(g)}})}
 function homeList(G){var L=G.filter(function(g){return g.st==='in'}).sort(function(x,y){return pri(y)-pri(x)});
   var P=G.filter(function(g){var t=new Date(g.dt).getTime()-Date.now();return g.st==='pre'&&t>-3600000&&t<129600000&&g.lg!=='NCAAH'}).sort(function(x,y){var ax=dayDiff(x)<=0?0:1,ay=dayDiff(y)<=0?0:1;if(ax!==ay)return ax-ay;return pri(y)-pri(x)||(x.dt>y.dt?1:-1)});
@@ -576,6 +599,7 @@ function autoCheck(){
     if(n>mine){toast('Update available: build '+n+'. Open Settings, then Check for updates.');document.getElementById('ustat').textContent='Update available: build '+n}})}
 function sel(){if(!cur)return;
   if(cur.tagName==='INPUT'){cur.focus();return}
+  if(cur.dataset.lg==='RANK'){showRank();return}
   if(cur.dataset.lg){gdlg=cur.dataset.lg;gdlgN=cur.textContent;gdf='all';gdp=0;loadTom();drawGd();show('gd');return}
   if(cur.dataset.grp){var g0=cur.dataset.grp;openG=openG===g0?'':g0;drawRail();refocus('#rail [data-grp="'+g0+'"]');return}
   if(cur.dataset.fv){chv=cur.dataset.fv;grp='';SPT='';buildView();renderCh();show('ch');if(!VIEW.length)toast(chv==='fav'?'No favorites yet. Open a channel and press the star button.':'Nothing played yet');return}
@@ -598,6 +622,7 @@ function sel(){if(!cur)return;
   else if(a==='resetb'){if(!rst){rst=1;toast('Press Reset board again to wipe every square on this board');setTimeout(function(){rst=0},4000)}else{rst=0;var b9=cb();b9.c={};b9.top=shuf(Math.floor(Math.random()*1e6));b9.side=shuf(Math.floor(Math.random()*1e6));save();drawSq();toast('Board reset - new numbers drawn');refocus('[data-act="resetb"]')}}
   else if(a==='chfav')toggleFav();
   else if(a==='chview'){var vv=cur.dataset.v;chv=chv===vv?'':vv;grp='';buildView();renderCh();if(chv&&!VIEW.length)toast(chv==='fav'?'No favorites yet. Open a channel and press the star button.':'Nothing played yet');refocus('#'+(vv==='fav'?'chfv':'chrc'))}
+  else if(a==='rkf'){RKF=cur.dataset.v;drawRk();refocus('#rkf .pill[data-v="'+RKF+'"]')}
   else if(a==='syncnow')syncNow(true);
   else if(a==='gdf'){gdf=cur.dataset.v;if(gdf==='gdclr'){gdlg='';gdf='all'}gdp=0;drawGd();refocus('#gdf .pill[data-v="'+gdf+'"]')}
   else if(a==='gdpg'){var dd=cur.dataset.d;gdp+=+dd;drawGd();refocus('#gdf .pill[data-d="'+dd+'"]')}

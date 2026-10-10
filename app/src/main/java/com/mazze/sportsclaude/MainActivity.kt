@@ -69,6 +69,7 @@ class MainActivity : Activity() {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         web = WebView(this)
         setContentView(web)
         val s = web.settings
@@ -269,6 +270,7 @@ class PlayerActivity : Activity() {
             .setMediaSourceFactory(DefaultMediaSourceFactory(f))
             .setLoadControl(lc)
             .setTrackSelector(ts)
+            .setWakeMode(androidx.media3.common.C.WAKE_MODE_NETWORK)
             .build()
         var stalls = 0
         var wasReady = false
